@@ -1,0 +1,56 @@
+# SL Academy Platform - Backend Dependencies
+
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Database & ORM
+supabase==2.3.4
+psycopg2-binary==2.9.9
+
+# Authentication & Security
+pydantic[email]==2.5.3
+pydantic-settings==2.1.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+cryptography==42.0.0
+email-validator==2.1.0
+
+# CORS & Middleware
+fastapi-cors==0.0.6
+
+# Rate Limiting
+slowapi==0.1.9
+
+# File Processing
+python-magic==0.4.27
+openpyxl==3.1.2
+pandas==2.1.4
+
+# AI Integration
+openai==1.10.0
+
+# Validation & Sanitization
+bleach==6.1.0
+
+# Monitoring & Alerting
+sentry-sdk[fastapi]==1.40.0
+psutil==5.9.7
+aiohttp==3.9.1
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+httpx==0.26.0
+
+# Development
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0
+
+# AWS SDK for secrets management
+boto3>=1.28.0
+botocore>=1.31.0
