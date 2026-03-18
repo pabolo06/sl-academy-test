@@ -41,10 +41,10 @@ class Question(QuestionBase):
     """Question response model (includes correct answer - admin only)"""
     id: UUID
     created_at: datetime
-    updated_at: datetime
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class QuestionPublic(BaseModel):
@@ -57,6 +57,7 @@ class QuestionPublic(BaseModel):
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class TestAttemptAnswer(BaseModel):
@@ -92,6 +93,7 @@ class TestAttemptResponse(BaseModel):
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class TestScore(BaseModel):

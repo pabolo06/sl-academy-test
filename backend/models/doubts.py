@@ -54,7 +54,7 @@ class Doubt(DoubtBase):
     answered_at: Optional[datetime] = None
     ai_summary: Optional[str] = None
     created_at: datetime
-    updated_at: datetime
     
     class Config:
         from_attributes = True
+        extra = "ignore"

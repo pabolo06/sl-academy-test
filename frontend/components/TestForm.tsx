@@ -30,7 +30,7 @@ export function TestForm({ questions, onSubmit, testType }: TestFormProps) {
 
   const validateAnswers = (): boolean => {
     const unanswered: string[] = [];
-    
+
     questions.forEach((question, index) => {
       if (answers[question.id] === undefined) {
         unanswered.push(`Questão ${index + 1}`);
@@ -47,7 +47,7 @@ export function TestForm({ questions, onSubmit, testType }: TestFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateAnswers()) {
       return;
     }
@@ -71,6 +71,18 @@ export function TestForm({ questions, onSubmit, testType }: TestFormProps) {
     }
   };
 
+  if (questions.length === 0) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-12 text-center border border-gray-700">
+        <svg className="mx-auto h-12 w-12 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 className="text-lg font-medium text-white mb-2">Nenhuma questão disponível</h3>
+        <p className="text-gray-400">Este {testType === 'pre' ? 'pré-teste' : 'pós-teste'} ainda não possui questões cadastradas.</p>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
@@ -78,6 +90,7 @@ export function TestForm({ questions, onSubmit, testType }: TestFormProps) {
           {testType === 'pre' ? '📝 Pré-teste' : '✅ Pós-teste'} - {questions.length} questões
         </p>
       </div>
+      ...
 
       {errors.length > 0 && (
         <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
@@ -100,15 +113,14 @@ export function TestForm({ questions, onSubmit, testType }: TestFormProps) {
             <div className="space-y-3">
               {question.options.map((option, oIndex) => {
                 const isSelected = answers[question.id] === oIndex;
-                
+
                 return (
                   <label
                     key={oIndex}
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      isSelected
+                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${isSelected
                         ? 'border-blue-500 bg-blue-900/20'
                         : 'border-gray-600 hover:border-gray-500 bg-gray-900/50'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -131,7 +143,7 @@ export function TestForm({ questions, onSubmit, testType }: TestFormProps) {
         <p className="text-sm text-gray-400">
           {Object.keys(answers).length} de {questions.length} questões respondidas
         </p>
-        
+
         <button
           type="submit"
           disabled={isSubmitting}

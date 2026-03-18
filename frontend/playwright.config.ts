@@ -63,6 +63,22 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
     },
+
+    /* Custom viewports for responsive testing */
+    {
+      name: 'mobile-custom',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 375, height: 667 },
+      },
+    },
+    {
+      name: 'desktop-custom',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+      },
+    },
   ],
 
   /* Run your local dev server before starting the tests */

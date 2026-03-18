@@ -30,6 +30,7 @@ export default function LessonManagementPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isFetchingDuration, setIsFetchingDuration] = useState(false);
 
   useEffect(() => {
     if (trackId) {
@@ -93,7 +94,7 @@ export default function LessonManagementPage() {
       return;
     }
     if (formData.duration_seconds <= 0) {
-      setError('Duração deve ser maior que zero');
+      setError('Duração deve ser maior que zero. Por favor, insira manualmente se não foi detectada automaticamente.');
       return;
     }
     if (formData.order < 0) {
@@ -114,10 +115,20 @@ export default function LessonManagementPage() {
     setError(null);
 
     try {
+      // Ensure track_id is a valid UUID string
       const lessonData = {
-        ...formData,
-        track_id: trackId,
+        track_id: String(trackId),
+        title: formData.title.trim(),
+        description: formData.description?.trim() || '',
+        video_url: formData.video_url.trim(),
+        duration_seconds: Number(formData.duration_seconds),
+        order: Number(formData.order),
       };
+
+      console.log('Sending lesson data:', lessonData);
+      console.log('Track ID:', trackId, 'Type:', typeof trackId);
+      console.log('Duration type:', typeof lessonData.duration_seconds);
+      console.log('Duration value:', lessonData.duration_seconds);
 
       if (editingLesson) {
         await lessonApi.update(editingLesson.id, lessonData);
@@ -130,7 +141,23 @@ export default function LessonManagementPage() {
       setEditingLesson(null);
       fetchTrackAndLessons();
     } catch (err: any) {
-      setError(err.message || 'Erro ao salvar aula');
+      console.error('Error creating lesson:', err);
+      console.error('Error details:', {
+        status: err.status,
+        message: err.message,
+        details: err.details
+      });
+      
+      // Show more detailed error message
+      let errorMessage = 'Erro ao salvar aula';
+      if (err.message) {
+        errorMessage = err.message;
+      }
+      if (err.details) {
+        errorMessage += `: ${JSON.stringify(err.details)}`;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -162,6 +189,58 @@ export default function LessonManagementPage() {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const extractYouTubeVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+      /youtube\.com\/embed\/([^&\s]+)/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  const fetchVideoDuration = async (videoUrl: string) => {
+    const videoId = extractYouTubeVideoId(videoUrl);
+    if (!videoId) {
+      console.log('No video ID extracted from URL:', videoUrl);
+      return;
+    }
+
+    console.log('Fetching duration for video ID:', videoId);
+    setIsFetchingDuration(true);
+    setError(null);
+
+    try {
+      const apiUrl = `/api/youtube/duration?videoId=${videoId}`;
+      console.log('Calling API:', apiUrl);
+      const response = await fetch(apiUrl);
+      
+      console.log('API response status:', response.status);
+      const data = await response.json();
+      console.log('API response data:', data);
+      
+      if (response.ok && data.duration && data.duration > 0) {
+        console.log('Setting duration to:', data.duration);
+        setFormData(prev => ({ ...prev, duration_seconds: data.duration }));
+      } else {
+        console.log('Duration not found in response');
+      }
+    } catch (err: any) {
+      // Silently fail - user can enter duration manually
+      console.log('Error fetching duration:', err);
+    } finally {
+      setIsFetchingDuration(false);
+    }
+  };
+
+  const handleVideoUrlChange = (url: string) => {
+    console.log('Video URL changed:', url);
+    setFormData({ ...formData, video_url: url });
   };
 
   return (
@@ -233,26 +312,67 @@ export default function LessonManagementPage() {
                     id="video_url"
                     type="url"
                     value={formData.video_url}
-                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                    onChange={(e) => handleVideoUrlChange(e.target.value)}
                     className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://..."
+                    placeholder="https://www.youtube.com/watch?v=..."
                     disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
                   <label htmlFor="duration" className="block text-sm font-medium text-gray-300 mb-2">
-                    Duração (segundos) *
+                    Duração *
                   </label>
-                  <input
-                    id="duration"
-                    type="number"
-                    min="1"
-                    value={formData.duration_seconds}
-                    onChange={(e) => setFormData({ ...formData, duration_seconds: parseInt(e.target.value) || 0 })}
-                    className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={isSubmitting}
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label htmlFor="duration_minutes" className="block text-xs text-gray-400 mb-1">
+                        Minutos
+                      </label>
+                      <input
+                        id="duration_minutes"
+                        type="number"
+                        min="0"
+                        value={Math.floor((formData.duration_seconds || 0) / 60)}
+                        onChange={(e) => {
+                          const minutes = Math.max(0, parseInt(e.target.value) || 0);
+                          const seconds = (formData.duration_seconds || 0) % 60;
+                          const total = minutes * 60 + seconds;
+                          console.log(`Minutes changed: ${minutes}, Total: ${total}`);
+                          setFormData({ ...formData, duration_seconds: total });
+                        }}
+                        className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={isSubmitting}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="duration_seconds" className="block text-xs text-gray-400 mb-1">
+                        Segundos
+                      </label>
+                      <input
+                        id="duration_seconds"
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={(formData.duration_seconds || 0) % 60}
+                        onChange={(e) => {
+                          const minutes = Math.floor((formData.duration_seconds || 0) / 60);
+                          const seconds = Math.min(59, Math.max(0, parseInt(e.target.value) || 0));
+                          const total = minutes * 60 + seconds;
+                          console.log(`Seconds changed: ${seconds}, Total: ${total}`);
+                          setFormData({ ...formData, duration_seconds: total });
+                        }}
+                        className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={isSubmitting}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  {formData.duration_seconds > 0 && (
+                    <p className="text-sm text-gray-400 mt-1">
+                      Total: {formData.duration_seconds} segundos
+                    </p>
+                  )}
                 </div>
 
                 <div>

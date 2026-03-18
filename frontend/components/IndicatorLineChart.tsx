@@ -5,6 +5,7 @@
 
 'use client';
 
+import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Indicator } from '@/types';
 
@@ -15,38 +16,44 @@ interface IndicatorLineChartProps {
 
 export function IndicatorLineChart({ indicators, title }: IndicatorLineChartProps) {
   // Group indicators by name and sort by date
-  const groupedData = indicators.reduce((acc, indicator) => {
-    if (!acc[indicator.name]) {
-      acc[indicator.name] = [];
-    }
-    acc[indicator.name].push(indicator);
-    return acc;
-  }, {} as Record<string, Indicator[]>);
+  const groupedData = useMemo(() => {
+    const grouped = indicators.reduce((acc, indicator) => {
+      if (!acc[indicator.name]) {
+        acc[indicator.name] = [];
+      }
+      acc[indicator.name].push(indicator);
+      return acc;
+    }, {} as Record<string, Indicator[]>);
 
-  // Sort each group by date
-  Object.keys(groupedData).forEach((name) => {
-    groupedData[name].sort((a, b) => 
-      new Date(a.reference_date).getTime() - new Date(b.reference_date).getTime()
-    );
-  });
+    // Sort each group by date
+    Object.keys(grouped).forEach((name) => {
+      grouped[name].sort((a, b) =>
+        new Date(a.reference_date).getTime() - new Date(b.reference_date).getTime()
+      );
+    });
+
+    return grouped;
+  }, [indicators]);
 
   // Transform data for recharts
-  const allDates = Array.from(
-    new Set(indicators.map((i) => i.reference_date))
-  ).sort();
+  const chartData = useMemo(() => {
+    const allDates = Array.from(
+      new Set(indicators.map((i) => i.reference_date))
+    ).sort();
 
-  const chartData = allDates.map((date) => {
-    const dataPoint: any = { date: formatDate(date) };
-    
-    Object.keys(groupedData).forEach((name) => {
-      const indicator = groupedData[name].find((i) => i.reference_date === date);
-      if (indicator) {
-        dataPoint[name] = indicator.value;
-      }
+    return allDates.map((date) => {
+      const dataPoint: any = { date: formatDate(date) };
+
+      Object.keys(groupedData).forEach((name) => {
+        const indicator = groupedData[name].find((i) => i.reference_date === date);
+        if (indicator) {
+          dataPoint[name] = indicator.value;
+        }
+      });
+
+      return dataPoint;
     });
-    
-    return dataPoint;
-  });
+  }, [indicators, groupedData]);
 
   const colors = [
     '#3b82f6', // blue
@@ -78,12 +85,12 @@ export function IndicatorLineChart({ indicators, title }: IndicatorLineChartProp
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis 
-            dataKey="date" 
+          <XAxis
+            dataKey="date"
             stroke="#9ca3af"
             style={{ fontSize: '12px' }}
           />
-          <YAxis 
+          <YAxis
             stroke="#9ca3af"
             style={{ fontSize: '12px' }}
           />
@@ -95,7 +102,7 @@ export function IndicatorLineChart({ indicators, title }: IndicatorLineChartProp
               color: '#fff',
             }}
           />
-          <Legend 
+          <Legend
             wrapperStyle={{ fontSize: '12px' }}
           />
           {Object.keys(groupedData).map((name, index) => (

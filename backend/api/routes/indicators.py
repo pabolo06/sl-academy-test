@@ -1,19 +1,20 @@
 """
 SL Academy Platform - Indicator Management Routes
-Handles indicator querying and import with RBAC
+Handles hospital performance and safety metrics
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from typing import List, Optional
-from datetime import date
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from typing import List
+from uuid import UUID
+from datetime import datetime
 from models.indicators import Indicator, IndicatorImportRequest, IndicatorImportResult
 from utils.session import get_current_user
-from utils.rate_limiter import check_indicator_import_rate_limit
 from middleware.auth import require_role
-from services.indicators import indicator_import_service
 from core.database import get_db
+from core.cache import cached, invalidate_cache
 from supabase import Client
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -21,36 +22,24 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[Indicator])
+@cached(ttl=300, prefix="indicators")  # 5 minutes cache
 async def get_indicators(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    start_date: Optional[date] = Query(None, alias="startDate", description="Filter by start date"),
-    end_date: Optional[date] = Query(None, alias="endDate", description="Filter by end date"),
+    request: Request,
     current_user: dict = Depends(get_current_user),
     db: Client = Depends(get_db)
 ):
     """
     Get indicators for current user's hospital
     
-    - **category**: Optional filter by category
-    - **startDate**: Optional filter by start date (YYYY-MM-DD)
-    - **endDate**: Optional filter by end date (YYYY-MM-DD)
-    
     Automatically filtered by hospital_id via RLS
+    Cached for 5 minutes
     """
     try:
-        # Build query
-        query = db.table("indicators").select("*").eq("deleted_at", None)
+        # Query indicators with hospital isolation
+        query = db.table("indicators").select("*").is_("deleted_at", "null")
         
-        # Filter by category if provided
-        if category:
-            query = query.eq("category", category)
-        
-        # Filter by date range if provided
-        if start_date:
-            query = query.gte("reference_date", start_date.isoformat())
-        
-        if end_date:
-            query = query.lte("reference_date", end_date.isoformat())
+        # Hospital isolation is handled by RLS, but we can be explicit
+        query = query.eq("hospital_id", current_user["hospital_id"])
         
         response = query.order("reference_date", desc=True).execute()
         
@@ -66,56 +55,50 @@ async def get_indicators(
 
 @router.post("/import", response_model=IndicatorImportResult)
 async def import_indicators(
-    request: Request,
-    import_request: IndicatorImportRequest,
-    _rate_limit: None = Depends(check_indicator_import_rate_limit),
+    import_data: IndicatorImportRequest,
     current_user: dict = Depends(require_role("manager")),
     db: Client = Depends(get_db)
 ):
     """
-    Import indicators from CSV/XLSX (manager only)
+    Import indicators from batch request (manager only)
     
-    - **indicators**: List of indicator rows (max 10,000)
-    
-    Validates each row and performs upsert (update if exists, create if not)
-    Returns detailed error report for failed rows
+    Validates and performs batch upsert of indicators for current hospital.
+    Automatically handles existing records (updates) or creates new ones.
     """
     try:
+        from services.indicators import indicator_import_service
+        from models.indicators import IndicatorImportRow
+        
+        # Map request items to service data model
+        service_indicators = [
+            IndicatorImportRow(**row.dict()) 
+            for row in import_data.indicators
+        ]
+        
+        # Execute import via service
         result = await indicator_import_service.import_indicators(
             db=db,
             hospital_id=current_user["hospital_id"],
-            indicators=import_request.indicators
+            indicators=service_indicators
         )
         
-        logger.info(
-            f"Indicator import completed by {current_user['email']}: "
-            f"{result.success_count} success, {result.error_count} errors"
-        )
-        
-        # Log indicator import
-        from utils.audit_logger import audit_logger
-        await audit_logger.log_indicator_import(
-            db=db,
-            user_id=current_user["user_id"],
-            hospital_id=current_user["hospital_id"],
-            success_count=result.success_count,
-            error_count=result.error_count
-        )
-        
+        # Invalidate indicators cache
+        if result.success_count > 0:
+            invalidate_cache("indicators:get_indicators:*")
+            
         return result
-    
+        
     except Exception as e:
-        logger.error(f"Error importing indicators: {str(e)}")
+        logger.error(f"Error importing indicators: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while importing indicators"
+            detail=f"An error occurred during import: {str(e)}"
         )
-
 
 
 @router.delete("/{indicator_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_indicator(
-    indicator_id: str,
+    indicator_id: UUID,
     current_user: dict = Depends(require_role("manager")),
     db: Client = Depends(get_db)
 ):
@@ -123,14 +106,11 @@ async def delete_indicator(
     Soft delete indicator (manager only)
     
     Sets deleted_at timestamp instead of permanent deletion
-    Automatically filtered by hospital_id via RLS
     """
     try:
-        from datetime import datetime
-        
         response = db.table("indicators").update({
             "deleted_at": datetime.utcnow().isoformat()
-        }).eq("id", indicator_id).eq("deleted_at", None).execute()
+        }).eq("id", str(indicator_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(
@@ -138,10 +118,11 @@ async def delete_indicator(
                 detail="Indicator not found"
             )
         
-        logger.info(f"Indicator soft deleted: {indicator_id} by {current_user['email']}")
+        # Invalidate indicators cache
+        invalidate_cache("indicators:get_indicators:*")
         
         return None
-    
+        
     except HTTPException:
         raise
     except Exception as e:

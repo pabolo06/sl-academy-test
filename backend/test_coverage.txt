@@ -1,0 +1,129 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.8, pytest-7.4.4, pluggy-1.6.0
+rootdir: C:\Users\pablo\OneDrive\Documentos\Oslo\backend
+plugins: anyio-4.12.1, hypothesis-6.92.0, asyncio-0.23.3, cov-4.1.0
+asyncio: mode=Mode.STRICT
+collected 101 items / 1 error
+
+=================================== ERRORS ====================================
+______________________ ERROR collecting test_results.txt ______________________
+..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\pathlib.py:1059: in read_text
+    return f.read()
+<frozen codecs>:322: in decode
+    ???
+E   UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+============================== warnings summary ===============================
+venv\Lib\site-packages\pydantic\fields.py:768
+venv\Lib\site-packages\pydantic\fields.py:768
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\venv\Lib\site-packages\pydantic\fields.py:768: PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    warn('`min_items` is deprecated and will be removed, use `min_length` instead', DeprecationWarning)
+
+venv\Lib\site-packages\pydantic\fields.py:774
+venv\Lib\site-packages\pydantic\fields.py:774
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\venv\Lib\site-packages\pydantic\fields.py:774: PydanticDeprecatedSince20: `max_items` is deprecated and will be removed, use `max_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    warn('`max_items` is deprecated and will be removed, use `max_length` instead', DeprecationWarning)
+
+models\tests.py:27
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\models\tests.py:27: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    @validator("correct_option_index")
+
+venv\Lib\site-packages\pydantic\_internal\_config.py:271
+venv\Lib\site-packages\pydantic\_internal\_config.py:271
+venv\Lib\site-packages\pydantic\_internal\_config.py:271
+venv\Lib\site-packages\pydantic\_internal\_config.py:271
+venv\Lib\site-packages\pydantic\_internal\_config.py:271
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\venv\Lib\site-packages\pydantic\_internal\_config.py:271: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+models\tests.py:74
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\models\tests.py:74: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    @validator("answers")
+
+venv\Lib\site-packages\pydantic\fields.py:799: 15 warnings
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\venv\Lib\site-packages\pydantic\fields.py:799: PydanticDeprecatedSince20: Using extra keyword arguments on `Field` is deprecated and will be removed. Use `json_schema_extra` instead. (Extra keys: 'env'). Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    warn(
+
+core\config.py:33
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\core\config.py:33: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    @validator("cors_origins")
+
+venv\Lib\site-packages\supabase\_async\auth_client.py:3
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\venv\Lib\site-packages\supabase\_async\auth_client.py:3: DeprecationWarning: The `gotrue` package is deprecated, is not going to receive updates in the future. Please, use `supabase_auth` instead.
+    from gotrue import (
+
+models\indicators.py:52
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\models\indicators.py:52: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    @validator("indicators")
+
+models\tests.py:68
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\models\tests.py:68: PytestCollectionWarning: cannot collect test class 'TestAttemptCreate' because it has a __init__ constructor (from: api/routes/test_attempts.py)
+    class TestAttemptCreate(BaseModel):
+
+models\tests.py:83
+  C:\Users\pablo\OneDrive\Documentos\Oslo\backend\models\tests.py:83: PytestCollectionWarning: cannot collect test class 'TestAttemptResponse' because it has a __init__ constructor (from: api/routes/test_attempts.py)
+    class TestAttemptResponse(BaseModel):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform win32, python 3.11.8-final-0 -----------
+Name                                   Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------
+api\__init__.py                            0      0   100%
+api\routes\__init__.py                     0      0   100%
+api\routes\admin.py                       30     30     0%   6-95
+api\routes\ai.py                          55     55     0%   6-146
+api\routes\auth.py                       125    125     0%   6-433
+api\routes\doubts.py                      83     83     0%   6-232
+api\routes\indicators.py                  53     53     0%   6-149
+api\routes\lessons.py                    127    127     0%   6-327
+api\routes\monitoring.py                  69     69     0%   5-153
+api\routes\questions.py                   26     26     0%   6-65
+api\routes\test_attempts.py               49     32    35%   41-118, 136-161
+api\routes\tracks.py                      92     92     0%   6-229
+api\routes\upload.py                      61     61     0%   6-172
+core\__init__.py                           2      0   100%
+core\alerts.py                           120    120     0%   6-311
+core\cache.py                             62     39    37%   29, 37-38, 58-87, 103-112, 122-159
+core\config.py                            26      0   100%
+core\database.py                          14      5    64%   18-23, 28, 37
+core\monitoring.py                       156    156     0%   6-304
+core\secrets.py                          110    110     0%   6-224
+debug_import.py                           23     23     0%   1-26
+main.py                                   49     49     0%   6-116
+middleware\__init__.py                     2      0   100%
+middleware\auth.py                        41     29    29%   41-68, 73-81, 91-114
+middleware\error_handler.py               20     20     0%   6-70
+middleware\monitoring.py                  54     54     0%   6-173
+models\__init__.py                         0      0   100%
+models\auth.py                            27     27     0%   6-47
+models\doubts.py                          35     35     0%   6-60
+models\indicators.py                      42      3    93%   55-57
+models\tests.py                           68      7    90%   30-32, 77-80
+models\tracks.py                          73     73     0%   6-120
+services\__init__.py                       4      0   100%
+services\ai_service.py                    62     44    29%   27-42, 63-123, 135-159, 163-170, 174-182
+services\indicators.py                    32     22    31%   35-95
+services\scoring.py                       39     27    31%   34-66, 90-94, 114-123
+tests\test_auth_flow.py                  289    228    21%   38, 52-56, 61-75, 81, 87-90, 96-102, 108, 122-125, 131-134, 143-150, 155-169, 202-251, 270-320, 338-348, 381-407, 424-446, 464-485, 516-530, 546-570, 586-597, 631-655, 674-708, 722-757, 776-808, 841-893, 903-905, 913
+tests\test_cache.py                       78     61    22%   15, 21-40, 46-63, 69-90, 95-107, 113-125, 130-149, 157-163
+tests\test_consent_management.py          47     26    45%   17, 24, 31, 36-39, 46, 52, 58, 62-78, 86, 92, 102, 107, 113, 119, 131, 143, 147
+tests\test_data_export.py                 32     13    59%   18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 81, 86, 91
+tests\test_rls_hospital_isolation.py     199    167    16%   30-36, 42-58, 66-102, 139-203, 224-287, 307-404, 438-497, 517-645, 662-698, 706
+tests\test_session_security.py           216    162    25%   30, 46-50, 57-72, 81-101, 106-118, 124, 130-131, 146, 160, 189-205, 216-229, 240-253, 264-277, 296-316, 331-363, 384-405, 430-435, 446-453, 469-497, 512-534, 555-581, 592-605, 621-658, 667, 678
+tests\test_soft_delete.py                 36     17    53%   17, 22, 27, 32, 40, 44, 48, 52, 56, 64-71, 75, 79, 83
+tests\test_user_deletion.py               44     19    57%   19, 24, 31, 38, 46, 53, 60, 68, 75, 91, 99, 107, 115, 122, 130, 136, 157, 168, 172
+utils\__init__.py                          0      0   100%
+utils\audit_logger.py                     38     38     0%   6-239
+utils\database_retry.py                   29     29     0%   6-88
+utils\file_validation.py                  46     46     0%   6-185
+utils\purge_deleted.py                    46     46     0%   6-168
+utils\rate_limiter.py                     71     54    24%   31-52, 56-66, 76-87, 96-116, 125-145, 154-174, 183-203
+utils\session.py                          53     33    38%   36-52, 64-82, 86-109, 113, 125-133
+utils\validation.py                       41     41     0%   6-160
+--------------------------------------------------------------------
+TOTAL                                   3096   2576    17%
+
+=========================== short test summary info ===========================
+ERROR test_results.txt - UnicodeDecodeError: 'utf-8' codec can't decode byte ...
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+======================= 31 warnings, 1 error in 31.58s ========================

@@ -72,7 +72,7 @@ async def generate_recommendations(
         # Get current lesson info
         lesson_response = db.table("lessons").select(
             "id, title, track_id"
-        ).eq("id", str(request_data.lesson_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(request_data.lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not lesson_response.data:
             raise HTTPException(
@@ -87,7 +87,7 @@ async def generate_recommendations(
             "id, title, description"
         ).eq("track_id", lesson["track_id"]).neq(
             "id", str(request_data.lesson_id)
-        ).eq("deleted_at", None).limit(10).execute()
+        ).is_("deleted_at", "null").limit(10).execute()
         
         available_lessons = available_lessons_response.data
         

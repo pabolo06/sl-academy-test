@@ -25,6 +25,8 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         "/docs",
         "/openapi.json",
         "/api/auth/login",
+        "/api/auth/login/medico",   # NEW
+        "/api/auth/login/gestor",   # NEW
     ]
     
     # Routes that start with these prefixes are public
@@ -32,6 +34,7 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         "/docs",
         "/redoc",
         "/openapi",
+        "/api/youtube",  # YouTube metadata endpoints (public)
     ]
     
     async def dispatch(self, request: Request, call_next):

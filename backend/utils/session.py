@@ -74,7 +74,7 @@ class SessionManager:
             
             # Check session expiration
             created_at = datetime.fromisoformat(session_data["created_at"])
-            if datetime.utcnow() - created_at > timedelta(seconds=self.SESSION_MAX_AGE):
+            if datetime.utcnow() - created_at >= timedelta(seconds=self.SESSION_MAX_AGE):
                 return None
             
             return session_data

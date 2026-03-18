@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", env="ENVIRONMENT")
     debug: bool = Field(default=True, env="DEBUG")
     
+    # Frontend URLs by domain
+    doctor_frontend_url: str = Field(default="http://localhost:3000", env="DOCTOR_FRONTEND_URL")
+    manager_frontend_url: str = Field(default="http://localhost:3001", env="MANAGER_FRONTEND_URL")
+
     # Logging
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
     

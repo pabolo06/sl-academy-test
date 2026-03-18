@@ -14,6 +14,7 @@ from core.database import get_db
 from supabase import Client
 import logging
 from datetime import datetime
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ async def create_doubt(
         # Verify lesson exists and belongs to user's hospital
         lesson_response = db.table("lessons").select(
             "id, track_id, tracks(hospital_id)"
-        ).eq("id", str(doubt.lesson_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(doubt.lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not lesson_response.data:
             raise HTTPException(
@@ -90,10 +91,10 @@ async def create_doubt(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error creating doubt: {str(e)}")
+        logger.error(f"Error creating doubt: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while creating doubt"
+            detail=f"An error occurred while creating doubt: {str(e)}"
         )
 
 
@@ -116,7 +117,7 @@ async def get_doubts(
     """
     try:
         # Build query based on role
-        query = db.table("doubts").select("*").eq("deleted_at", None)
+        query = db.table("doubts").select("*").is_("deleted_at", "null")
         
         # Doctors see only their own doubts
         if current_user["role"] == "doctor":
@@ -135,10 +136,10 @@ async def get_doubts(
         return [Doubt(**doubt) for doubt in response.data]
     
     except Exception as e:
-        logger.error(f"Error fetching doubts: {str(e)}")
+        logger.error(f"Error fetching doubts: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while fetching doubts"
+            detail=f"An error occurred while fetching doubts: {str(e)}"
         )
 
 
@@ -161,7 +162,7 @@ async def answer_doubt(
         # Verify doubt exists and belongs to user's hospital
         doubt_response = db.table("doubts").select("id, status").eq(
             "id", str(doubt_id)
-        ).eq("deleted_at", None).single().execute()
+        ).is_("deleted_at", "null").single().execute()
         
         if not doubt_response.data:
             raise HTTPException(
@@ -173,9 +174,8 @@ async def answer_doubt(
         response = db.table("doubts").update({
             "answer": doubt_update.answer,
             "status": DoubtStatus.ANSWERED.value,
-            "answered_by": current_user["user_id"],
-            "answered_at": datetime.utcnow().isoformat()
-        }).eq("id", str(doubt_id)).eq("deleted_at", None).execute()
+            "answered_by": current_user["user_id"]
+        }).eq("id", str(doubt_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(
@@ -190,10 +190,10 @@ async def answer_doubt(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error answering doubt {doubt_id}: {str(e)}")
+        logger.error(f"Error answering doubt {doubt_id}: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while answering doubt"
+            detail=f"An error occurred while answering doubt: {str(e)}"
         )
 
 
@@ -213,7 +213,7 @@ async def delete_doubt(
         
         response = db.table("doubts").update({
             "deleted_at": datetime.utcnow().isoformat()
-        }).eq("id", str(doubt_id)).eq("deleted_at", None).execute()
+        }).eq("id", str(doubt_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class IndicatorImportService:
-    """Service for importing indicators with validation and upsert"""
+    """Service for importing indicators with validation and efficient batch upsert"""
     
     @staticmethod
     async def import_indicators(
@@ -22,76 +22,62 @@ class IndicatorImportService:
         indicators: List[IndicatorImportRow]
     ) -> IndicatorImportResult:
         """
-        Import indicators with validation and upsert logic
-        
-        Args:
-            db: Supabase client
-            hospital_id: Hospital UUID
-            indicators: List of indicator rows to import
-        
-        Returns:
-            IndicatorImportResult with success/error counts and details
+        Import indicators with validation and efficient batch upsert logic
         """
         success_count = 0
         errors: List[IndicatorImportError] = []
-        
-        for idx, indicator_row in enumerate(indicators, start=1):
+        valid_indicators_data = []
+
+        # 1. Validation and Data Preparation
+        for idx, row in enumerate(indicators, start=1):
             try:
-                # Validate and parse reference_date
+                # Validate date
                 try:
-                    reference_date = datetime.strptime(
-                        indicator_row.reference_date, "%Y-%m-%d"
-                    ).date()
+                    reference_date = datetime.strptime(row.reference_date, "%Y-%m-%d").date()
                 except ValueError:
-                    raise ValueError(f"Invalid date format: {indicator_row.reference_date}. Expected YYYY-MM-DD")
+                    raise ValueError(f"Invalid date format: {row.reference_date}. Expected YYYY-MM-DD")
                 
-                # Validate required fields
-                if not indicator_row.name or not indicator_row.name.strip():
+                if not row.name or not row.name.strip():
                     raise ValueError("Name is required")
                 
-                if not indicator_row.category or not indicator_row.category.strip():
+                if not row.category or not row.category.strip():
                     raise ValueError("Category is required")
-                
-                # Check for duplicate (same name + reference_date)
-                existing = db.table("indicators").select("id").eq(
-                    "hospital_id", hospital_id
-                ).eq("name", indicator_row.name).eq(
-                    "reference_date", reference_date.isoformat()
-                ).eq("deleted_at", None).execute()
-                
-                indicator_data = {
+
+                valid_indicators_data.append({
                     "hospital_id": hospital_id,
-                    "name": indicator_row.name.strip(),
-                    "category": indicator_row.category.strip(),
-                    "value": indicator_row.value,
+                    "name": row.name.strip(),
+                    "category": row.category.strip(),
+                    "value": row.value,
                     "reference_date": reference_date.isoformat(),
-                    "unit": indicator_row.unit.strip() if indicator_row.unit else None,
-                    "notes": indicator_row.notes.strip() if indicator_row.notes else None
-                }
-                
-                if existing.data:
-                    # Update existing indicator
-                    db.table("indicators").update(indicator_data).eq(
-                        "id", existing.data[0]["id"]
-                    ).execute()
-                else:
-                    # Create new indicator
-                    db.table("indicators").insert(indicator_data).execute()
-                
-                success_count += 1
-            
+                    "unit": row.unit.strip() if row.unit else None,
+                    "notes": row.notes.strip() if row.notes else None
+                })
             except Exception as e:
                 errors.append(IndicatorImportError(
                     row=idx,
                     error=str(e),
-                    data={
-                        "name": indicator_row.name,
-                        "category": indicator_row.category,
-                        "reference_date": indicator_row.reference_date
-                    }
+                    data=row.dict()
                 ))
-                logger.warning(f"Error importing indicator row {idx}: {str(e)}")
-        
+
+        # 2. Batch Upsert into Database
+        if valid_indicators_data:
+            try:
+                # Upsert based on (hospital_id, name, reference_date)
+                # Note: This is most efficient with a unique constraint in the DB
+                response = db.table("indicators").upsert(
+                    valid_indicators_data,
+                    on_conflict="hospital_id, name, reference_date"
+                ).execute()
+                
+                success_count = len(response.data) if response.data else 0
+            except Exception as e:
+                logger.error(f"Error during batch upsert: {str(e)}")
+                errors.append(IndicatorImportError(
+                    row=0,
+                    error=f"Batch operation failed: {str(e)}",
+                    data={}
+                ))
+
         return IndicatorImportResult(
             success_count=success_count,
             error_count=len(errors),

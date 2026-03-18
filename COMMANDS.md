@@ -1,468 +1,245 @@
-# 🛠️ Comandos Úteis - SL Academy Platform
+# 🚀 Comandos Essenciais - SL Academy Platform
 
-Referência rápida de comandos para desenvolvimento.
+## 📋 Índice Rápido
+- [Iniciar Aplicação](#iniciar-aplicação)
+- [Configuração Inicial](#configuração-inicial)
+- [Comandos SQL](#comandos-sql)
+- [Testes e Debug](#testes-e-debug)
+- [Troubleshooting](#troubleshooting)
 
-## 🐍 Backend (FastAPI)
+---
 
-### Setup Inicial
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-```
-
-### Desenvolvimento
-```bash
-# Iniciar servidor de desenvolvimento
-python main.py
-
-# Ou com uvicorn diretamente
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Iniciar em modo debug
-uvicorn main:app --reload --log-level debug
-```
-
-### Testes
-```bash
-# Rodar todos os testes
-pytest
-
-# Rodar com cobertura
-pytest --cov=. --cov-report=html
-
-# Rodar testes específicos
-pytest tests/test_auth.py
-
-# Rodar com verbose
-pytest -v
-```
-
-### Code Quality
-```bash
-# Formatar código
-black .
-
-# Verificar formatação sem modificar
-black --check .
-
-# Lint
-flake8 .
-
-# Type checking
-mypy .
-```
-
-### Dependências
-```bash
-# Adicionar nova dependência
-pip install nome-do-pacote
-pip freeze > requirements.txt
-
-# Atualizar dependências
-pip install --upgrade -r requirements.txt
-```
-
-## ⚛️ Frontend (Next.js)
-
-### Setup Inicial
-```bash
-cd frontend
-npm install
-cp .env.example .env.local
-```
-
-### Desenvolvimento
-```bash
-# Iniciar servidor de desenvolvimento
-npm run dev
-
-# Iniciar em porta específica
-npm run dev -- -p 3001
-
-# Iniciar com turbo
-npm run dev --turbo
-```
-
-### Build e Produção
-```bash
-# Build para produção
-npm run build
-
-# Iniciar servidor de produção
-npm start
-
-# Analisar bundle
-npm run build -- --analyze
-```
-
-### Testes
-```bash
-# Type checking
-npm run type-check
-
-# Lint
-npm run lint
-
-# Lint e fix
-npm run lint -- --fix
-```
-
-### Dependências
-```bash
-# Adicionar dependência
-npm install nome-do-pacote
-
-# Adicionar dependência de desenvolvimento
-npm install -D nome-do-pacote
-
-# Atualizar dependências
-npm update
-
-# Verificar dependências desatualizadas
-npm outdated
-```
-
-## 🗄️ Database (Supabase)
-
-### Migrations
-```bash
-# Aplicar migrations via CLI
-cd supabase
-supabase db push
-
-# Criar nova migration
-supabase migration new nome_da_migration
-
-# Reset database (cuidado!)
-supabase db reset
-```
-
-### Queries Úteis
-```sql
--- Ver todas as tabelas
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = 'public';
-
--- Ver políticas RLS
-SELECT * FROM pg_policies;
-
--- Ver triggers
-SELECT * FROM information_schema.triggers;
-
--- Contar registros por tabela
-SELECT 
-  schemaname,
-  tablename,
-  (SELECT COUNT(*) FROM public.hospitals) as hospitals,
-  (SELECT COUNT(*) FROM public.profiles) as profiles,
-  (SELECT COUNT(*) FROM public.tracks) as tracks,
-  (SELECT COUNT(*) FROM public.lessons) as lessons;
-
--- Ver usuários
-SELECT * FROM auth.users;
-
--- Ver perfis
-SELECT * FROM profiles;
-```
-
-## 🔧 Git
-
-### Workflow Básico
-```bash
-# Verificar status
-git status
-
-# Adicionar arquivos
-git add .
-
-# Commit
-git commit -m "feat: descrição da feature"
-
-# Push
-git push origin main
-
-# Pull
-git pull origin main
-```
-
-### Branches
-```bash
-# Criar e mudar para nova branch
-git checkout -b feature/nome-da-feature
-
-# Listar branches
-git branch -a
-
-# Mudar de branch
-git checkout main
-
-# Deletar branch local
-git branch -d feature/nome-da-feature
-
-# Deletar branch remota
-git push origin --delete feature/nome-da-feature
-```
-
-### Commits Semânticos
-```bash
-# Feature
-git commit -m "feat: adiciona endpoint de login"
-
-# Fix
-git commit -m "fix: corrige validação de email"
-
-# Docs
-git commit -m "docs: atualiza README com instruções"
-
-# Style
-git commit -m "style: formata código com black"
-
-# Refactor
-git commit -m "refactor: reorganiza estrutura de pastas"
-
-# Test
-git commit -m "test: adiciona testes para autenticação"
-
-# Chore
-git commit -m "chore: atualiza dependências"
-```
-
-## 🐳 Docker (Futuro)
-
-### Build e Run
-```bash
-# Build backend
-docker build -t sl-academy-backend ./backend
-
-# Build frontend
-docker build -t sl-academy-frontend ./frontend
-
-# Run backend
-docker run -p 8000:8000 sl-academy-backend
-
-# Run frontend
-docker run -p 3000:3000 sl-academy-frontend
-
-# Docker Compose (quando implementado)
-docker-compose up
-docker-compose down
-docker-compose logs -f
-```
-
-## 📊 Monitoramento
-
-### Logs
-```bash
-# Backend logs
-tail -f logs/backend.log
-
-# Frontend logs (development)
-# Logs aparecem no terminal onde npm run dev está rodando
-
-# Supabase logs
-# Acessar via dashboard do Supabase
-```
-
-### Performance
-```bash
-# Backend - verificar endpoints lentos
-# Acessar http://localhost:8000/docs e testar endpoints
-
-# Frontend - Lighthouse
-# Abrir DevTools > Lighthouse > Generate Report
-
-# Frontend - Bundle analyzer
-npm run build -- --analyze
-```
-
-## 🧪 Testing
+## 🎯 Iniciar Aplicação
 
 ### Backend
-```bash
-# Rodar testes unitários
-pytest tests/unit/
-
-# Rodar testes de integração
-pytest tests/integration/
-
-# Rodar testes com marcadores
-pytest -m "auth"
-
-# Rodar testes em paralelo
-pytest -n auto
+```powershell
+cd C:\Users\pablo\OneDrive\Documentos\Oslo
+.\start-backend.ps1
 ```
 
-### Frontend
-```bash
-# Rodar testes (quando implementados)
-npm test
-
-# Rodar testes em watch mode
-npm test -- --watch
-
-# Rodar testes com cobertura
-npm test -- --coverage
+### Frontend (novo terminal)
+```powershell
+cd C:\Users\pablo\OneDrive\Documentos\Oslo
+.\start-frontend.ps1
 ```
 
-### E2E (Playwright - quando implementado)
-```bash
-# Instalar Playwright
-npx playwright install
-
-# Rodar testes E2E
-npx playwright test
-
-# Rodar em modo UI
-npx playwright test --ui
-
-# Rodar teste específico
-npx playwright test tests/e2e/login.spec.ts
+### Acessar no Navegador
+```
+http://localhost:3000
 ```
 
-## 🔍 Debug
+**Login:**
+- Email: `admin@hospital.com`
+- Senha: `Admin123!`
 
-### Backend
-```bash
-# Iniciar com debugger
-python -m pdb main.py
+---
 
-# Ou usar VS Code debugger
-# Criar .vscode/launch.json e usar F5
-```
+## ⚙️ Configuração Inicial
 
-### Frontend
-```bash
-# Debug no browser
-# Abrir DevTools (F12) e usar breakpoints
-
-# Debug no VS Code
-# Usar extensão "Debugger for Chrome"
-```
-
-## 📦 Deploy (Futuro)
-
-### Vercel (Frontend)
-```bash
-# Instalar Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-
-# Deploy para produção
-vercel --prod
-```
-
-### Railway/Render (Backend)
-```bash
-# Seguir instruções específicas da plataforma
-# Configurar variáveis de ambiente
-# Conectar repositório Git
-```
-
-## 🔐 Segurança
-
-### Verificar Vulnerabilidades
-```bash
-# Backend
-pip-audit
-
-# Frontend
-npm audit
-
-# Fix vulnerabilidades automáticas
-npm audit fix
-```
-
-### Gerar Secrets
-```bash
-# Gerar chave de 32 caracteres para SESSION_SECRET_KEY
+### 1. Gerar Session Secret
+```powershell
 python -c "import secrets; print(secrets.token_urlsafe(32))"
-
-# Ou
-openssl rand -base64 32
 ```
 
-## 📝 Documentação
-
-### Gerar Docs da API
+### 2. Configurar Backend
+Edite `backend/.env`:
 ```bash
-# Backend - já disponível em /docs
-# Acessar http://localhost:8000/docs
-
-# Exportar OpenAPI schema
-curl http://localhost:8000/openapi.json > openapi.json
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_ANON_KEY=eyJhbGc...
+SUPABASE_SERVICE_KEY=eyJhbGc...
+SESSION_SECRET_KEY=cole-o-secret-gerado-acima
 ```
 
-### Gerar Docs do Frontend
+### 3. Configurar Frontend
+Edite `frontend/.env.local`:
 ```bash
-# TypeDoc (quando implementado)
-npx typedoc --out docs src/
-```
-
-## 🎯 Tasks do Projeto
-
-### Ver Tasks
-```bash
-# Ver arquivo de tasks
-cat .kiro/specs/sl-academy-platform/tasks.md
-
-# Ver status do projeto
-cat PROJECT_STATUS.md
-```
-
-### Marcar Task como Completa
-```bash
-# Editar .kiro/specs/sl-academy-platform/tasks.md
-# Mudar [ ] para [x] na task completada
-```
-
-## 💡 Dicas Úteis
-
-### Limpar Cache
-```bash
-# Backend
-find . -type d -name __pycache__ -exec rm -r {} +
-find . -type f -name "*.pyc" -delete
-
-# Frontend
-rm -rf .next
-rm -rf node_modules
-npm install
-```
-
-### Resetar Ambiente
-```bash
-# Backend
-deactivate  # Desativar venv
-rm -rf venv
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Frontend
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Verificar Portas em Uso
-```bash
-# Windows
-netstat -ano | findstr :8000
-netstat -ano | findstr :3000
-
-# macOS/Linux
-lsof -i :8000
-lsof -i :3000
-
-# Matar processo
-# Windows: taskkill /PID <PID> /F
-# macOS/Linux: kill -9 <PID>
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
 ```
 
 ---
 
-**💡 Dica:** Salve este arquivo nos seus favoritos para referência rápida!
+## 🗄️ Comandos SQL
+
+### Criar Perfil para Usuário
+```sql
+INSERT INTO hospitals (id, name) 
+VALUES ('00000000-0000-0000-0000-000000000001', 'Hospital Teste')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO profiles (id, hospital_id, full_name, role, is_focal_point)
+VALUES (
+  'COLE_O_USER_UID_AQUI',
+  '00000000-0000-0000-0000-000000000001',
+  'Admin Teste',
+  'manager',
+  false
+);
+```
+
+### Verificar Tabelas
+```sql
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public'
+ORDER BY table_name;
+```
+
+### Ver Usuários
+```sql
+SELECT id, email, created_at
+FROM auth.users
+ORDER BY created_at DESC;
+```
+
+### Ver Perfis
+```sql
+SELECT id, full_name, role, hospital_id
+FROM profiles
+WHERE deleted_at IS NULL;
+```
+
+### Ver Trilhas
+```sql
+SELECT id, title, description, created_at
+FROM tracks
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC;
+```
+
+---
+
+## 🧪 Testes e Debug
+
+### Health Check Backend
+```powershell
+curl http://localhost:8000/health
+```
+
+### Abrir API Docs
+```powershell
+start http://localhost:8000/docs
+```
+
+### Abrir Frontend
+```powershell
+start http://localhost:3000
+```
+
+### Ver Logs
+Os logs aparecem automaticamente nos terminais onde backend e frontend estão rodando.
+
+---
+
+## 🐛 Troubleshooting
+
+### Porta 8000 em Uso
+```powershell
+# Encontrar processo
+netstat -ano | findstr :8000
+
+# Matar processo (substitua 1234 pelo PID)
+taskkill /PID 1234 /F
+```
+
+### Porta 3000 em Uso
+```powershell
+# Encontrar processo
+netstat -ano | findstr :3000
+
+# Matar processo (substitua 1234 pelo PID)
+taskkill /PID 1234 /F
+```
+
+### Reinstalar Dependências Backend
+```powershell
+cd backend
+Remove-Item -Recurse -Force venv
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### Reinstalar Dependências Frontend
+```powershell
+cd frontend
+Remove-Item -Recurse -Force node_modules, package-lock.json
+npm install
+```
+
+---
+
+## 📊 URLs Importantes
+
+| Serviço | URL | Descrição |
+|---------|-----|-----------|
+| **Frontend** | http://localhost:3000 | Interface da aplicação |
+| **Login** | http://localhost:3000/login | Página de login |
+| **Dashboard** | http://localhost:3000/dashboard | Dashboard principal |
+| **Backend API** | http://localhost:8000 | API REST |
+| **API Docs** | http://localhost:8000/docs | Documentação Swagger |
+| **Health Check** | http://localhost:8000/health | Status do backend |
+| **Supabase** | https://app.supabase.com | Dashboard do Supabase |
+
+---
+
+## 📚 Guias Completos
+
+- **Início Rápido**: [INICIO_RAPIDO.md](./INICIO_RAPIDO.md)
+- **Guia Completo Web**: [COMO_RODAR_NA_WEB.md](./COMO_RODAR_NA_WEB.md)
+- **Guia Localhost**: [LOCALHOST_TESTING_GUIDE.md](./LOCALHOST_TESTING_GUIDE.md)
+- **Checklist de Testes**: [TESTING_CHECKLIST.md](./TESTING_CHECKLIST.md)
+- **Comandos Prontos**: [COMANDOS_PRONTOS.md](./COMANDOS_PRONTOS.md)
+
+---
+
+## 🔐 Credenciais de Teste
+
+```
+Email:    admin@hospital.com
+Senha:    Admin123!
+Role:     manager
+Hospital: Hospital Teste
+```
+
+---
+
+## 📦 Verificar Versões
+
+```powershell
+python --version  # Deve ser 3.9+
+node --version    # Deve ser 18+
+npm --version
+```
+
+---
+
+## 🗂️ Migrações SQL (Ordem de Execução)
+
+Execute no Supabase SQL Editor, nesta ordem:
+
+1. ✅ `001_initial_schema.sql`
+2. ✅ `002_rls_policies_fixed.sql` ⚠️ **Use o _fixed**
+3. ✅ `003_triggers.sql`
+4. ✅ `004_seed_data.sql`
+5. ✅ `005_performance_indexes.sql`
+
+---
+
+## ✅ Checklist Rápido
+
+Antes de começar:
+- [ ] Python 3.9+ instalado
+- [ ] Node.js 18+ instalado
+- [ ] Projeto Supabase criado
+- [ ] Migrações SQL executadas (5 arquivos)
+- [ ] Usuário de teste criado no Supabase
+- [ ] Perfil criado para o usuário (SQL)
+- [ ] `backend/.env` configurado
+- [ ] `frontend/.env.local` configurado
+- [ ] Backend rodando em :8000
+- [ ] Frontend rodando em :3000
+- [ ] Login funcionando
+
+**Tudo OK? Você está pronto! 🎉**

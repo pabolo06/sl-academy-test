@@ -39,6 +39,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- APPLY TRIGGERS
 -- ============================================================================
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 -- Trigger for auto-creating profiles on user signup
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
@@ -54,4 +55,3 @@ CREATE TRIGGER on_auth_user_created
 
 COMMENT ON FUNCTION update_updated_at_column() IS 'Automatically updates the updated_at timestamp on row modification';
 COMMENT ON FUNCTION handle_new_user() IS 'Automatically creates a profile record when a new user signs up via Supabase Auth';
-COMMENT ON TRIGGER on_auth_user_created ON auth.users IS 'Creates profile record for new users with metadata from signup';

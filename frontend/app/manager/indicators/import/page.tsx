@@ -5,9 +5,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { indicatorApi } from '@/lib/api';
 import { IndicatorImportRow, IndicatorImportResult } from '@/types';
@@ -44,27 +45,36 @@ export default function IndicatorImportPage() {
     },
   });
 
-  const handleFileSelect = (selectedFile: File) => {
+  const handleFileSelect = useCallback(async (selectedFile: File) => {
     setFile(selectedFile);
     setError(null);
     setResult(null);
     setPreview([]);
 
-    // Parse CSV for preview
-    if (selectedFile.name.endsWith('.csv')) {
-      Papa.parse(selectedFile, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const rows = results.data.slice(0, 10) as IndicatorImportRow[];
-          setPreview(rows);
-        },
-        error: (err) => {
-          setError(`Erro ao ler arquivo: ${err.message}`);
-        },
-      });
+    try {
+      if (selectedFile.name.endsWith('.csv')) {
+        Papa.parse(selectedFile, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const rows = results.data.slice(0, 10) as IndicatorImportRow[];
+            setPreview(rows);
+          },
+          error: (err) => {
+            setError(`Erro ao ler arquivo: ${err.message}`);
+          },
+        });
+      } else if (selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls')) {
+        const data = await selectedFile.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet) as IndicatorImportRow[];
+        setPreview(jsonData.slice(0, 10));
+      }
+    } catch (err: any) {
+      setError(`Erro ao pré-visualizar arquivo: ${err.message}`);
     }
-  };
+  }, []);
 
   const handleImport = async () => {
     if (!file) return;
@@ -74,48 +84,51 @@ export default function IndicatorImportPage() {
     setResult(null);
 
     try {
-      // Parse entire file
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async (results) => {
-          const rows = results.data as IndicatorImportRow[];
+      let rows: IndicatorImportRow[] = [];
 
-          // Validate row count
-          if (rows.length > 10000) {
-            setError('Arquivo contém mais de 10.000 linhas. Limite máximo atingido.');
-            setIsUploading(false);
-            return;
-          }
-
-          // Validate required fields
-          const validRows = rows.filter((row) => {
-            return row.name && row.category && row.value !== undefined && row.reference_date;
+      if (file.name.endsWith('.csv')) {
+        await new Promise<void>((resolve, reject) => {
+          Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              rows = results.data as IndicatorImportRow[];
+              resolve();
+            },
+            error: (err) => reject(err),
           });
+        });
+      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(worksheet) as IndicatorImportRow[];
+      }
 
-          if (validRows.length === 0) {
-            setError('Nenhuma linha válida encontrada. Verifique o formato do arquivo.');
-            setIsUploading(false);
-            return;
-          }
+      // Validate row count
+      if (rows.length > 10000) {
+        setError('Arquivo contém mais de 10.000 linhas. Limite máximo atingido.');
+        setIsUploading(false);
+        return;
+      }
 
-          try {
-            // Submit to API
-            const importResult = await indicatorApi.import({ indicators: validRows });
-            setResult(importResult);
-          } catch (err: any) {
-            setError(err.message || 'Erro ao importar indicadores');
-          } finally {
-            setIsUploading(false);
-          }
-        },
-        error: (err) => {
-          setError(`Erro ao processar arquivo: ${err.message}`);
-          setIsUploading(false);
-        },
+      // Validate required fields
+      const validRows = rows.filter((row) => {
+        return row.name && row.category && (row.value !== undefined) && row.reference_date;
       });
+
+      if (validRows.length === 0) {
+        setError('Nenhuma linha válida encontrada. Verifique o formato do arquivo e os nomes das colunas.');
+        setIsUploading(false);
+        return;
+      }
+
+      // Submit to API
+      const importResult = await indicatorApi.import({ indicators: validRows });
+      setResult(importResult);
     } catch (err: any) {
       setError(err.message || 'Erro ao importar indicadores');
+    } finally {
       setIsUploading(false);
     }
   };
@@ -161,11 +174,10 @@ export default function IndicatorImportPage() {
         {!file && (
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
-              isDragActive
+            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${isDragActive
                 ? 'border-blue-500 bg-blue-900/20'
                 : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-            }`}
+              }`}
           >
             <input {...getInputProps()} />
             <div className="space-y-3">
@@ -262,7 +274,7 @@ export default function IndicatorImportPage() {
         {result && (
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 space-y-4">
             <h3 className="text-lg font-semibold text-white">Resultado da Importação</h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-900/20 border border-green-700/50 rounded-lg p-4">
                 <p className="text-sm text-green-300">Sucesso</p>

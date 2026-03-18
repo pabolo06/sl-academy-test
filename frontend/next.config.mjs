@@ -1,31 +1,30 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
+
   // PWA Configuration
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
   },
-  
+
   // Image optimization
   images: {
     domains: [
       'localhost',
-      // Add your Supabase storage domain here
-      // e.g., 'your-project.supabase.co'
+      'joewhfllvdaygffsosor.supabase.co'
     ],
     formats: ['image/avif', 'image/webp'],
   },
-  
+
   // Environment variables exposed to the browser
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
-  
+
   // Headers for security
   async headers() {
     return [

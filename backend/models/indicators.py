@@ -15,8 +15,6 @@ class IndicatorBase(BaseModel):
     category: str = Field(..., min_length=1, max_length=100, description="Indicator category")
     value: float = Field(..., description="Indicator value")
     reference_date: date = Field(..., description="Reference date for the indicator")
-    unit: Optional[str] = Field(None, max_length=50, description="Unit of measurement")
-    notes: Optional[str] = Field(None, max_length=1000, description="Additional notes")
 
 
 class IndicatorCreate(IndicatorBase):
@@ -29,10 +27,10 @@ class Indicator(IndicatorBase):
     id: UUID
     hospital_id: UUID
     created_at: datetime
-    updated_at: datetime
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class IndicatorImportRow(BaseModel):

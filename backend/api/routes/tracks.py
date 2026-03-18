@@ -10,8 +10,10 @@ from models.tracks import Track, TrackCreate, TrackUpdate, TrackWithLessons
 from utils.session import get_current_user
 from middleware.auth import require_role
 from core.database import get_db
+from core.cache import cached, invalidate_cache
 from supabase import Client
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[Track])
+@cached(ttl=600, prefix="tracks")  # 10 minutes cache
 async def get_tracks(
     request: Request,
     current_user: dict = Depends(get_current_user),
@@ -28,22 +31,28 @@ async def get_tracks(
     Get all tracks for current user's hospital
     
     Automatically filtered by hospital_id via RLS
+    Cached for 10 minutes
     """
     try:
         # Query tracks with lesson count
         response = db.table("tracks").select(
             "*, lessons(count)"
-        ).eq("deleted_at", None).order("created_at", desc=True).execute()
+        ).is_("deleted_at", "null").order("created_at", desc=True).execute()
         
-        tracks = []
-        for track_data in response.data:
-            track = Track(
-                **track_data,
-                lesson_count=track_data.get("lessons", [{}])[0].get("count", 0) if track_data.get("lessons") else 0
-            )
-            tracks.append(track)
-        
-        return tracks
+        tracks_data = []
+        for track in response.data:
+            # Map Supabase lessons(count) to lesson_count
+            lessons_info = track.get("lessons")
+            if isinstance(lessons_info, dict):
+                track["lesson_count"] = lessons_info.get("count", 0)
+            elif isinstance(lessons_info, list) and len(lessons_info) > 0:
+                track["lesson_count"] = lessons_info[0].get("count", 0)
+            else:
+                track["lesson_count"] = 0
+            
+            tracks_data.append(Track(**track))
+            
+        return tracks_data
     
     except Exception as e:
         logger.error(f"Error fetching tracks: {str(e)}")
@@ -67,7 +76,7 @@ async def get_track(
     try:
         response = db.table("tracks").select(
             "*, lessons(*)"
-        ).eq("id", str(track_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(track_id)).is_("deleted_at", "null").single().execute()
         
         if not response.data:
             raise HTTPException(
@@ -76,7 +85,15 @@ async def get_track(
             )
         
         track_data = response.data
-        lessons = [lesson for lesson in track_data.get("lessons", []) if lesson.get("deleted_at") is None]
+        if not track_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Track not found"
+            )
+        
+        # Extract lessons and remove from track_data to avoid duplicate kwarg in Pydantic model
+        raw_lessons = track_data.pop("lessons", [])
+        lessons = [lesson for lesson in raw_lessons if lesson.get("deleted_at") is None]
         lessons.sort(key=lambda x: x.get("order", 0))
         
         return TrackWithLessons(**track_data, lessons=lessons)
@@ -84,10 +101,12 @@ async def get_track(
     except HTTPException:
         raise
     except Exception as e:
+        print(f"DEBUG Global Error in get_track: {str(e)}")
+        traceback.print_exc()
         logger.error(f"Error fetching track {track_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while fetching track"
+            detail=f"An error occurred while fetching track: {str(e)}"
         )
 
 
@@ -114,6 +133,9 @@ async def create_track(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create track"
             )
+        
+        # Invalidate tracks cache for this hospital
+        invalidate_cache(f"tracks:get_tracks:*")
         
         logger.info(f"Track created: {response.data[0]['id']} by {current_user['email']}")
         
@@ -157,7 +179,7 @@ async def update_track(
         
         response = db.table("tracks").update(
             update_data
-        ).eq("id", str(track_id)).eq("deleted_at", None).execute()
+        ).eq("id", str(track_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(
@@ -165,9 +187,17 @@ async def update_track(
                 detail="Track not found"
             )
         
+        # Invalidate tracks and lessons cache
+        invalidate_cache(f"tracks:get_tracks:*")
+        invalidate_cache(f"lessons:get_track_lessons:*{track_id}*")
+        
         logger.info(f"Track updated: {track_id} by {current_user['email']}")
         
-        return Track(**response.data[0], lesson_count=0)
+        # Add lesson count (default to 0 for update response)
+        track_resp = response.data[0]
+        track_resp["lesson_count"] = 0
+        
+        return Track(**track_resp)
     
     except HTTPException:
         raise
@@ -196,13 +226,17 @@ async def delete_track(
         
         response = db.table("tracks").update({
             "deleted_at": datetime.utcnow().isoformat()
-        }).eq("id", str(track_id)).eq("deleted_at", None).execute()
+        }).eq("id", str(track_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Track not found"
             )
+        
+        # Invalidate tracks and lessons cache
+        invalidate_cache(f"tracks:get_tracks:*")
+        invalidate_cache(f"lessons:get_track_lessons:*{track_id}*")
         
         logger.info(f"Track soft deleted: {track_id} by {current_user['email']}")
         

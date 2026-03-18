@@ -8,6 +8,7 @@ from utils.session import get_current_user
 from middleware.auth import require_role
 from utils.purge_deleted import purge_service
 from core.database import get_db
+from core.cache import get_cache_stats
 from supabase import Client
 import logging
 
@@ -64,4 +65,34 @@ async def purge_deleted_records(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred during purge operation"
+        )
+
+
+@router.get("/cache/stats", status_code=status.HTTP_200_OK)
+async def get_cache_statistics(
+    current_user: dict = Depends(require_role("manager"))
+):
+    """
+    Get Redis cache statistics (manager only)
+    
+    Returns cache metrics including:
+    - Memory usage
+    - Hit/miss rates
+    - Connected clients
+    - Total keys
+    
+    Useful for monitoring cache performance and health.
+    """
+    try:
+        stats = get_cache_stats()
+        
+        logger.info(f"Cache stats requested by {current_user['email']}")
+        
+        return stats
+    
+    except Exception as e:
+        logger.error(f"Error getting cache stats: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while fetching cache statistics"
         )

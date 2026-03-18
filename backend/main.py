@@ -1,8 +1,3 @@
-"""
-SL Academy Platform - Main FastAPI Application
-Entry point for the backend API
-"""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -32,7 +27,10 @@ app = FastAPI(
     debug=settings.debug
 )
 
-# Configure CORS
+# Add session validation middleware
+app.add_middleware(SessionValidationMiddleware)
+
+# Configure CORS (Must be the outermost layer to handle CORS on 401/error responses)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -41,9 +39,6 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "Cookie"],
     max_age=3600
 )
-
-# Add session validation middleware
-app.add_middleware(SessionValidationMiddleware)
 
 # Register exception handlers
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
@@ -91,7 +86,7 @@ async def root():
 
 
 # Import routers
-from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin
+from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
@@ -104,6 +99,7 @@ app.include_router(indicators.router, prefix="/api/indicators", tags=["Indicator
 app.include_router(ai.router, prefix="/api", tags=["AI"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
 
 
 if __name__ == "__main__":

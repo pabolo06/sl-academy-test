@@ -31,12 +31,12 @@ class Track(TrackBase):
     id: UUID
     hospital_id: UUID
     created_at: datetime
-    updated_at: datetime
     deleted_at: Optional[datetime] = None
     lesson_count: Optional[int] = 0
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class LessonBase(BaseModel):
@@ -95,11 +95,11 @@ class Lesson(LessonBase):
     id: UUID
     track_id: UUID
     created_at: datetime
-    updated_at: datetime
     deleted_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class LessonDetail(Lesson):
@@ -110,6 +110,7 @@ class LessonDetail(Lesson):
     
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 
 class TrackWithLessons(Track):
@@ -118,3 +119,4 @@ class TrackWithLessons(Track):
     
     class Config:
         from_attributes = True
+        extra = "ignore"

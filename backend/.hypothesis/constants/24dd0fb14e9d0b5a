@@ -1,0 +1,4 @@
+# file: C:\Users\pablo\OneDrive\Documentos\Oslo\backend\middleware\auth.py
+# hypothesis_version: 6.151.9
+
+['/', '/api/auth/login', '/docs', '/health', '/openapi', '/openapi.json', '/redoc', 'Not authenticated', 'application/json', 'last_activity', 'refresh_session', 'role']

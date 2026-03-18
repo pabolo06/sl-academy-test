@@ -4,11 +4,19 @@ Validates file size, type, and generates secure filenames
 """
 
 from fastapi import HTTPException, UploadFile, status
-import magic
 import secrets
 import string
 from pathlib import Path
 from typing import List, Tuple
+import mimetypes
+
+# Try to import magic, but provide fallback for Windows
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except (ImportError, OSError):
+    MAGIC_AVAILABLE = False
+    print("Warning: python-magic not available, using fallback MIME detection")
 
 
 class FileValidator:
@@ -63,7 +71,7 @@ class FileValidator:
         file_type: str = "file"
     ) -> str:
         """
-        Validate file type using magic bytes
+        Validate file type using magic bytes or fallback to extension
         
         Args:
             file: Uploaded file
@@ -76,15 +84,28 @@ class FileValidator:
         Raises:
             HTTPException: If file type not allowed
         """
-        # Read first 2048 bytes for magic byte detection
-        file.file.seek(0)
-        file_header = file.file.read(2048)
-        file.file.seek(0)
+        mime = None
         
-        # Detect MIME type from magic bytes
-        mime = magic.from_buffer(file_header, mime=True)
+        if MAGIC_AVAILABLE:
+            # Read first 2048 bytes for magic byte detection
+            file.file.seek(0)
+            file_header = file.file.read(2048)
+            file.file.seek(0)
+            
+            # Detect MIME type from magic bytes
+            mime = magic.from_buffer(file_header, mime=True)
+        else:
+            # Fallback: use file extension and content_type
+            # First try the content_type from the upload
+            if file.content_type and file.content_type in allowed_types:
+                mime = file.content_type
+            else:
+                # Try to guess from filename
+                guessed_type, _ = mimetypes.guess_type(file.filename)
+                if guessed_type:
+                    mime = guessed_type
         
-        if mime not in allowed_types:
+        if not mime or mime not in allowed_types:
             raise HTTPException(
                 status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                 detail=f"Invalid {file_type} type. Allowed types: {', '.join(allowed_types)}"

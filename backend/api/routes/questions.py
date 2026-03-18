@@ -11,6 +11,7 @@ from utils.session import get_current_user
 from core.database import get_db
 from supabase import Client
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ async def get_lesson_questions(
         # Verify lesson exists and belongs to user's hospital
         lesson_response = db.table("lessons").select(
             "id, track_id, tracks(hospital_id)"
-        ).eq("id", str(lesson_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not lesson_response.data:
             raise HTTPException(
@@ -45,24 +46,26 @@ async def get_lesson_questions(
                 detail="Lesson not found"
             )
         
-        # Build query
+        # Build query - questions table does NOT have deleted_at column
         query = db.table("questions").select(
             "id, lesson_id, type, question_text, options"
-        ).eq("lesson_id", str(lesson_id)).eq("deleted_at", None)
+        ).eq("lesson_id", str(lesson_id))
         
         # Filter by type if provided
         if type:
             query = query.eq("type", type.value)
         
-        response = query.execute()
+        response = query.order("created_at").execute()
+        
+        logger.debug(f"Questions data for lesson {lesson_id}: {response.data}")
         
         return [QuestionPublic(**question) for question in response.data]
     
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching questions for lesson {lesson_id}: {str(e)}")
+        logger.error(f"Error fetching questions for lesson {lesson_id}: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while fetching questions"
+            detail=f"An error occurred while fetching questions: {str(e)}"
         )

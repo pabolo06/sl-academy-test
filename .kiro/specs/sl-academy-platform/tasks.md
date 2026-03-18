@@ -22,7 +22,7 @@ Each task builds on previous work and includes specific requirements references 
     - Implement INSERT/UPDATE policies with role checks
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
   
-  - [ ] 1.3 Write property test for RLS hospital isolation
+  - [x] 1.3 Write property test for RLS hospital isolation
     - **Property 1: Hospital Data Isolation**
     - **Property 2: RLS Policy Enforcement**
     - **Validates: Requirements 2.1, 2.2, 2.3**
@@ -48,7 +48,7 @@ Each task builds on previous work and includes specific requirements references 
     - Set httpOnly, secure, sameSite=lax cookie attributes
     - _Requirements: 1.1, 1.2, 1.3, 1.5, 12.1, 12.2_
   
-  - [ ]* 2.3 Write property tests for session security
+  - [x] 2.3 Write property tests for session security
     - **Property 4: Session Security Attributes**
     - **Property 5: Protected Route Authentication**
     - **Validates: Requirements 1.3, 12.2, 12.3, 12.4_
@@ -64,7 +64,7 @@ Each task builds on previous work and includes specific requirements references 
     - Return 429 with retry-after header when limit exceeded
     - _Requirements: 1.6, 13.1, 13.6_
   
-  - [ ]* 2.6 Write unit tests for authentication flow
+  - [x] 2.6 Write unit tests for authentication flow
     - Test successful login with valid credentials
     - Test failed login with invalid credentials
     - Test session expiration after 24 hours
@@ -141,7 +141,7 @@ Each task builds on previous work and includes specific requirements references 
     - Return 400 for missing answers
     - _Requirements: 5.2, 5.5, 6.1, 6.2, 6.7_
   
-  - [ ]* 4.7 Write property test for test ownership
+  - [ ] 4.7 Write property test for test ownership
     - **Property 11: Test Ownership**
     - **Validates: Requirements 3.8, 6.7**
   
@@ -165,7 +165,7 @@ Each task builds on previous work and includes specific requirements references 
     - Optionally generate AI summary
     - _Requirements: 7.1, 7.2, 7.3, 7.8_
   
-  - [ ]* 5.3 Write property test for doubt initial state
+  - [ ] 5.3 Write property test for doubt initial state
     - **Property 14: Doubt Initial State**
     - **Validates: Requirement 7.1**
   
@@ -897,58 +897,58 @@ Each task builds on previous work and includes specific requirements references 
     - **Validates: Requirements 11.7, 11.8**
 
 - [ ] 31. Performance testing and optimization
-  - [ ] 31.1 Conduct load testing
+  - [x] 31.1 Conduct load testing
     - Test API endpoints under load (1000 req/min)
     - Measure response times at p50, p95, p99
     - Identify bottlenecks
     - _Requirements: 17.1, 17.2, 17.3, 17.4_
   
-  - [ ] 31.2 Optimize slow queries
+  - [x] 31.2 Optimize slow queries
     - Review query execution plans
     - Add missing indexes
     - Optimize N+1 query problems
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.7_
   
-  - [ ] 31.3 Implement caching strategy
+  - [x] 31.3 Implement caching strategy
     - Cache track and lesson listings (5-10 min TTL)
     - Cache user profiles (15 min TTL)
     - Implement cache invalidation on updates
     - _Requirements: 17.1, 17.2, 17.3_
 
-  - [ ] 31.4 Optimize video delivery
+  - [x] 31.4 Optimize video delivery
     - Configure CDN for video files
     - Implement adaptive bitrate streaming
     - Set up video preloading strategy
     - _Requirements: 25.1, 25.2, 25.4, 25.5_
 
-- [ ] 32. Documentation and handoff
-  - [ ] 32.1 Write API documentation
+- [x] 32. Documentation and handoff
+  - [x] 32.1 Write API documentation
     - Document all endpoints with request/response examples
     - Document authentication flow
     - Document error codes and messages
     - _Requirements: 1.1, 1.2, 1.5_
   
-  - [ ] 32.2 Write deployment documentation
+  - [x] 32.2 Write deployment documentation
     - Document infrastructure requirements
     - Document environment setup
     - Document deployment procedures
     - Document rollback procedures
     - _Requirements: 29.1, 29.2_
   
-  - [ ] 32.3 Write user documentation
+  - [x] 32.3 Write user documentation
     - Create user guide for doctors
     - Create admin guide for managers
     - Document common troubleshooting steps
     - _Requirements: 23.1, 23.4_
   
-  - [ ] 32.4 Create runbook for operations
+  - [x] 32.4 Create runbook for operations
     - Document monitoring and alerting
     - Document incident response procedures
     - Document backup and recovery procedures
     - Document secret rotation procedures
     - _Requirements: 22.1, 22.2, 22.3, 22.4, 22.5, 22.6_
 
-- [ ] 33. Final checkpoint - System complete
+- [x] 33. Final checkpoint - System complete
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

@@ -89,7 +89,7 @@ class ScoringService:
         """
         response = db.table("questions").select(
             "id, correct_option_index"
-        ).eq("lesson_id", str(lesson_id)).eq("type", question_type).eq("deleted_at", None).execute()
+        ).eq("lesson_id", str(lesson_id)).eq("type", question_type).is_("deleted_at", "null").execute()
         
         return {
             UUID(q["id"]): q["correct_option_index"]

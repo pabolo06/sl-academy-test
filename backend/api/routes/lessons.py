@@ -10,6 +10,7 @@ from models.tracks import Lesson, LessonCreate, LessonUpdate, LessonDetail
 from utils.session import get_current_user
 from middleware.auth import require_role
 from core.database import get_db
+from core.cache import cached, invalidate_cache
 from supabase import Client
 import logging
 
@@ -19,6 +20,7 @@ router = APIRouter()
 
 
 @router.get("/tracks/{track_id}/lessons", response_model=List[Lesson])
+@cached(ttl=600, prefix="lessons")  # 10 minutes cache
 async def get_track_lessons(
     track_id: UUID,
     current_user: dict = Depends(get_current_user),
@@ -29,12 +31,13 @@ async def get_track_lessons(
     
     Returns lessons ordered by order field
     Automatically filtered by hospital_id via RLS
+    Cached for 10 minutes
     """
     try:
         # Verify track exists and belongs to user's hospital
         track_response = db.table("tracks").select("id").eq(
             "id", str(track_id)
-        ).eq("deleted_at", None).single().execute()
+        ).is_("deleted_at", "null").single().execute()
         
         if not track_response.data:
             raise HTTPException(
@@ -45,7 +48,7 @@ async def get_track_lessons(
         # Get lessons ordered by order field
         response = db.table("lessons").select("*").eq(
             "track_id", str(track_id)
-        ).eq("deleted_at", None).order("order", desc=False).execute()
+        ).is_("deleted_at", "null").order("order", desc=False).execute()
         
         return [Lesson(**lesson) for lesson in response.data]
     
@@ -60,6 +63,7 @@ async def get_track_lessons(
 
 
 @router.get("/{lesson_id}", response_model=LessonDetail)
+@cached(ttl=600, prefix="lessons")  # 10 minutes cache
 async def get_lesson(
     lesson_id: UUID,
     current_user: dict = Depends(get_current_user),
@@ -69,11 +73,12 @@ async def get_lesson(
     Get lesson by ID with track info and question counts
     
     Automatically filtered by hospital_id via RLS
+    Cached for 10 minutes
     """
     try:
         response = db.table("lessons").select(
             "*, tracks(*), questions(count)"
-        ).eq("id", str(lesson_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not response.data:
             raise HTTPException(
@@ -87,9 +92,10 @@ async def get_lesson(
         pre_test_count = 0
         post_test_count = 0
         if lesson_data.get("questions"):
+            # questions table does NOT have deleted_at column
             questions_response = db.table("questions").select(
                 "type"
-            ).eq("lesson_id", str(lesson_id)).eq("deleted_at", None).execute()
+            ).eq("lesson_id", str(lesson_id)).execute()
             
             for q in questions_response.data:
                 if q["type"] == "pre":
@@ -130,7 +136,7 @@ async def create_lesson(
         # Verify track exists and belongs to user's hospital
         track_response = db.table("tracks").select("id").eq(
             "id", str(lesson.track_id)
-        ).eq("deleted_at", None).single().execute()
+        ).is_("deleted_at", "null").single().execute()
         
         if not track_response.data:
             raise HTTPException(
@@ -141,7 +147,7 @@ async def create_lesson(
         # Check for duplicate order in track
         existing_order = db.table("lessons").select("id").eq(
             "track_id", str(lesson.track_id)
-        ).eq("order", lesson.order).eq("deleted_at", None).execute()
+        ).eq("order", lesson.order).is_("deleted_at", "null").execute()
         
         if existing_order.data:
             raise HTTPException(
@@ -165,6 +171,10 @@ async def create_lesson(
                 detail="Failed to create lesson"
             )
         
+        # Invalidate lessons cache for this track
+        invalidate_cache(f"lessons:get_track_lessons:*{lesson.track_id}*")
+        invalidate_cache(f"tracks:get_tracks:*")
+        
         logger.info(f"Lesson created: {response.data[0]['id']} by {current_user['email']}")
         
         return Lesson(**response.data[0])
@@ -172,10 +182,11 @@ async def create_lesson(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error creating lesson: {str(e)}")
+        logger.error(f"Error creating lesson: {str(e)}", exc_info=True)
+        logger.error(f"Lesson data: track_id={lesson.track_id}, title={lesson.title}, duration={lesson.duration_seconds}, order={lesson.order}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while creating lesson"
+            detail=f"An error occurred while creating lesson: {str(e)}"
         )
 
 
@@ -196,7 +207,7 @@ async def update_lesson(
         # Get current lesson
         current_lesson = db.table("lessons").select(
             "track_id, order"
-        ).eq("id", str(lesson_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not current_lesson.data:
             raise HTTPException(
@@ -219,7 +230,7 @@ async def update_lesson(
             if lesson_update.order != current_lesson.data["order"]:
                 existing_order = db.table("lessons").select("id").eq(
                     "track_id", current_lesson.data["track_id"]
-                ).eq("order", lesson_update.order).eq("deleted_at", None).execute()
+                ).eq("order", lesson_update.order).is_("deleted_at", "null").execute()
                 
                 if existing_order.data:
                     raise HTTPException(
@@ -237,13 +248,18 @@ async def update_lesson(
         
         response = db.table("lessons").update(
             update_data
-        ).eq("id", str(lesson_id)).eq("deleted_at", None).execute()
+        ).eq("id", str(lesson_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Lesson not found"
             )
+        
+        # Invalidate lessons cache
+        invalidate_cache(f"lessons:get_track_lessons:*{current_lesson.data['track_id']}*")
+        invalidate_cache(f"lessons:get_lesson:*{lesson_id}*")
+        invalidate_cache(f"tracks:get_tracks:*")
         
         logger.info(f"Lesson updated: {lesson_id} by {current_user['email']}")
         
@@ -274,15 +290,33 @@ async def delete_lesson(
     try:
         from datetime import datetime
         
+        # Get lesson to find track_id for cache invalidation
+        lesson_response = db.table("lessons").select("track_id").eq(
+            "id", str(lesson_id)
+        ).is_("deleted_at", "null").single().execute()
+        
+        if not lesson_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Lesson not found"
+            )
+        
+        track_id = lesson_response.data["track_id"]
+        
         response = db.table("lessons").update({
             "deleted_at": datetime.utcnow().isoformat()
-        }).eq("id", str(lesson_id)).eq("deleted_at", None).execute()
+        }).eq("id", str(lesson_id)).is_("deleted_at", "null").execute()
         
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Lesson not found"
             )
+        
+        # Invalidate lessons cache
+        invalidate_cache(f"lessons:get_track_lessons:*{track_id}*")
+        invalidate_cache(f"lessons:get_lesson:*{lesson_id}*")
+        invalidate_cache(f"tracks:get_tracks:*")
         
         logger.info(f"Lesson soft deleted: {lesson_id} by {current_user['email']}")
         

@@ -7,14 +7,207 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from models.auth import LoginRequest, LoginResponse, LogoutResponse, UserDataExport
 from utils.session import session_manager, get_current_user
 from utils.rate_limiter import check_login_rate_limit
+from utils.audit_logger import audit_logger, AuditLogger
 from core.database import get_db
+from core.config import settings
 from supabase import Client
 from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
+def get_audit_logger():
+    return audit_logger
+
+
 router = APIRouter()
+
+
+async def _domain_login(
+    request: Request,
+    response: Response,
+    credentials: LoginRequest,
+    db: Client,
+    logger_service: AuditLogger,
+    expected_role: str,
+    redirect_url: str
+) -> LoginResponse:
+    """
+    Internal helper that performs domain-specific login with role validation.
+
+    Authenticates the user via Supabase, fetches the profile, and checks that
+    the profile role matches `expected_role`. Returns HTTP 403 without creating
+    a session when the roles do not match.
+    """
+    # Check rate limit
+    await check_login_rate_limit(request)
+
+    # Validate consent
+    if not credentials.accept_terms:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You must accept the terms of service and privacy policy"
+        )
+
+    # Authenticate with Supabase Auth
+    auth_response = db.auth.sign_in_with_password({
+        "email": credentials.email,
+        "password": credentials.password
+    })
+
+    if not auth_response.user:
+        await logger_service.log_auth_failure(
+            db=db,
+            email=credentials.email,
+            reason="Invalid credentials",
+            ip_address=request.client.host if request.client else "unknown",
+            user_agent=request.headers.get("user-agent", "unknown")
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+
+    user = auth_response.user
+
+    # Get user profile with hospital and role
+    profile_response = db.table("profiles").select(
+        "id, hospital_id, role, consent_timestamp, hospitals(name)"
+    ).eq("id", user.id).is_("deleted_at", "null").single().execute()
+
+    if not profile_response.data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User profile not found"
+        )
+
+    profile = profile_response.data
+
+    # Domain validation — reject if role does not match the expected domain role
+    if profile["role"] != expected_role:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied for this login domain"
+        )
+
+    # Update consent timestamp if not already set
+    if not profile.get("consent_timestamp"):
+        db.table("profiles").update({
+            "consent_timestamp": datetime.utcnow().isoformat()
+        }).eq("id", user.id).execute()
+        logger.info(f"Consent recorded for user: {user.email}")
+
+    # Create encrypted session cookie
+    session_manager.create_session(
+        response=response,
+        user_id=str(user.id),
+        email=user.email,
+        hospital_id=str(profile["hospital_id"]),
+        role=profile["role"]
+    )
+
+    # Log successful login
+    await logger_service.log_auth_success(
+        db=db,
+        user_id=str(user.id),
+        hospital_id=str(profile["hospital_id"]),
+        email=user.email,
+        role=profile["role"],
+        ip_address=request.client.host if request.client else "unknown",
+        user_agent=request.headers.get("user-agent", "unknown")
+    )
+    logger.info(f"User logged in: {user.email} (role: {profile['role']}, domain: {expected_role})")
+
+    return LoginResponse(
+        success=True,
+        message="Login successful",
+        user={
+            "id": str(user.id),
+            "email": user.email,
+            "role": profile["role"],
+            "hospital_id": str(profile["hospital_id"]),
+            "hospital_name": profile["hospitals"]["name"] if profile.get("hospitals") else None
+        },
+        redirect_url=redirect_url
+    )
+
+
+@router.post("/login/medico", response_model=LoginResponse)
+async def login_medico(
+    request: Request,
+    response: Response,
+    credentials: LoginRequest,
+    db: Client = Depends(get_db),
+    logger_service: AuditLogger = Depends(get_audit_logger)
+):
+    """
+    Authenticate a doctor user via the médico domain.
+
+    - **email**: User email address
+    - **password**: User password
+    - **accept_terms**: User consent to terms and privacy policy
+
+    Only users with role `doctor` are allowed. Returns HTTP 403 for any other role.
+    On success, returns an encrypted session cookie and a `redirect_url` pointing
+    to the doctor frontend.
+    """
+    try:
+        return await _domain_login(
+            request=request,
+            response=response,
+            credentials=credentials,
+            db=db,
+            logger_service=logger_service,
+            expected_role="doctor",
+            redirect_url=settings.doctor_frontend_url
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login medico error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred during login"
+        )
+
+
+@router.post("/login/gestor", response_model=LoginResponse)
+async def login_gestor(
+    request: Request,
+    response: Response,
+    credentials: LoginRequest,
+    db: Client = Depends(get_db),
+    logger_service: AuditLogger = Depends(get_audit_logger)
+):
+    """
+    Authenticate a manager user via the gestor domain.
+
+    - **email**: User email address
+    - **password**: User password
+    - **accept_terms**: User consent to terms and privacy policy
+
+    Only users with role `manager` are allowed. Returns HTTP 403 for any other role.
+    On success, returns an encrypted session cookie and a `redirect_url` pointing
+    to the manager frontend.
+    """
+    try:
+        return await _domain_login(
+            request=request,
+            response=response,
+            credentials=credentials,
+            db=db,
+            logger_service=logger_service,
+            expected_role="manager",
+            redirect_url=settings.manager_frontend_url
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login gestor error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred during login"
+        )
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -22,19 +215,27 @@ async def login(
     request: Request,
     response: Response,
     credentials: LoginRequest,
-    _rate_limit: None = Depends(check_login_rate_limit),
-    db: Client = Depends(get_db)
+    db: Client = Depends(get_db),
+    logger_service: AuditLogger = Depends(get_audit_logger)
 ):
     """
-    Authenticate user and create session
-    
+    Authenticate user and create session.
+
+    .. deprecated::
+        This endpoint is deprecated. Use ``POST /login/medico`` for doctor users
+        or ``POST /login/gestor`` for manager users instead. This endpoint is
+        kept for backwards compatibility and will be removed in a future release.
+
     - **email**: User email address
     - **password**: User password
     - **accept_terms**: User consent to terms and privacy policy
-    
+
     Returns encrypted session cookie with user data
     """
     try:
+        # Check rate limit
+        await check_login_rate_limit(request)
+
         # Validate consent
         if not credentials.accept_terms:
             raise HTTPException(
@@ -50,12 +251,12 @@ async def login(
         
         if not auth_response.user:
             # Log failed attempt
-            from utils.audit_logger import audit_logger
-            await audit_logger.log_auth_failure(
+            await logger_service.log_auth_failure(
                 db=db,
                 email=credentials.email,
                 reason="Invalid credentials",
-                ip_address=request.client.host
+                ip_address=request.client.host if request.client else "unknown",
+                user_agent=request.headers.get("user-agent", "unknown")
             )
             
             raise HTTPException(
@@ -68,7 +269,7 @@ async def login(
         # Get user profile with hospital and role
         profile_response = db.table("profiles").select(
             "id, hospital_id, role, consent_timestamp, hospitals(name)"
-        ).eq("id", user.id).eq("deleted_at", None).single().execute()
+        ).eq("id", user.id).is_("deleted_at", "null").single().execute()
         
         if not profile_response.data:
             raise HTTPException(
@@ -95,17 +296,24 @@ async def login(
         )
         
         # Log successful login
-        from utils.audit_logger import audit_logger
-        await audit_logger.log_auth_success(
+        await logger_service.log_auth_success(
             db=db,
             user_id=str(user.id),
             hospital_id=str(profile["hospital_id"]),
             email=user.email,
-            ip_address=request.client.host
+            role=profile["role"],
+            ip_address=request.client.host if request.client else "unknown",
+            user_agent=request.headers.get("user-agent", "unknown")
         )
-        
         logger.info(f"User logged in: {user.email} (role: {profile['role']})")
         
+        # Determine redirect_url based on role
+        role_redirect_map = {
+            "doctor": settings.doctor_frontend_url,
+            "manager": settings.manager_frontend_url,
+        }
+        redirect_url = role_redirect_map.get(profile["role"])
+
         return LoginResponse(
             success=True,
             message="Login successful",
@@ -115,10 +323,12 @@ async def login(
                 "role": profile["role"],
                 "hospital_id": str(profile["hospital_id"]),
                 "hospital_name": profile["hospitals"]["name"] if profile.get("hospitals") else None
-            }
+            },
+            redirect_url=redirect_url
         )
     
     except HTTPException:
+        # Re-raise HTTPExceptions as-is
         raise
     except Exception as e:
         logger.error(f"Login error: {str(e)}")
@@ -158,26 +368,39 @@ async def logout(
 
 
 @router.get("/me")
+# @cached(ttl=900, prefix="profiles")  # 15 minutes cache
 async def get_current_user_info(
     request: Request,
     response: Response,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Client = Depends(get_db)
 ):
     """
     Get current authenticated user information
     
     Requires valid session cookie
     Automatically refreshes session on activity
+    Cached for 15 minutes
     """
     # Refresh session activity timestamp
     session_manager.refresh_session(request, response)
     
+    # Fetch hospital name if not in session
+    hospital_name = None
+    try:
+        hospital_response = db.table("hospitals").select("name").eq("id", current_user["hospital_id"]).single().execute()
+        if hospital_response.data:
+            hospital_name = hospital_response.data["name"]
+    except Exception as e:
+        logger.error(f"Error fetching hospital name in /me: {str(e)}")
+
     return {
         "user": {
             "id": current_user["user_id"],
             "email": current_user["email"],
             "role": current_user["role"],
-            "hospital_id": current_user["hospital_id"]
+            "hospital_id": current_user["hospital_id"],
+            "hospital_name": hospital_name
         }
     }
 
@@ -186,7 +409,8 @@ async def get_current_user_info(
 async def delete_user_account(
     response: Response,
     current_user: dict = Depends(get_current_user),
-    db: Client = Depends(get_db)
+    db: Client = Depends(get_db),
+    logger_service: AuditLogger = Depends(get_audit_logger)
 ):
     """
     Permanently delete user account and all personal data (GDPR Right to be Forgotten)
@@ -245,8 +469,7 @@ async def delete_user_account(
         session_manager.destroy_session(response)
         
         # 7. Log the deletion for audit purposes
-        from utils.audit_logger import audit_logger
-        await audit_logger.log_account_deletion(
+        await logger_service.log_account_deletion(
             db=db,
             user_id=user_id,
             email=email,
@@ -300,7 +523,7 @@ async def export_user_data(
         # 1. Get user profile data
         profile_response = db.table("profiles").select(
             "id, hospital_id, full_name, role, is_focal_point, consent_timestamp, created_at, hospitals(name)"
-        ).eq("id", user_id).eq("deleted_at", None).single().execute()
+        ).eq("id", user_id).is_("deleted_at", "null").single().execute()
         
         if not profile_response.data:
             raise HTTPException(
@@ -339,7 +562,7 @@ async def export_user_data(
             ai_summary, created_at,
             lessons(id, title)
             """
-        ).eq("profile_id", user_id).eq("deleted_at", None).order("created_at", desc=True).execute()
+        ).eq("profile_id", user_id).is_("deleted_at", "null").order("created_at", desc=True).execute()
         
         doubts = []
         for doubt in doubts_response.data:

@@ -5,6 +5,7 @@
 
 'use client';
 
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Indicator } from '@/types';
 
@@ -15,24 +16,26 @@ interface IndicatorBarChartProps {
 
 export function IndicatorBarChart({ indicators, title }: IndicatorBarChartProps) {
   // Group by category and calculate average
-  const categoryData = indicators.reduce((acc, indicator) => {
-    if (!acc[indicator.category]) {
-      acc[indicator.category] = {
-        category: indicator.category,
-        total: 0,
-        count: 0,
-      };
-    }
-    acc[indicator.category].total += indicator.value;
-    acc[indicator.category].count += 1;
-    return acc;
-  }, {} as Record<string, { category: string; total: number; count: number }>);
+  const chartData = useMemo(() => {
+    const categoryData = indicators.reduce((acc, indicator) => {
+      if (!acc[indicator.category]) {
+        acc[indicator.category] = {
+          category: indicator.category,
+          total: 0,
+          count: 0,
+        };
+      }
+      acc[indicator.category].total += indicator.value;
+      acc[indicator.category].count += 1;
+      return acc;
+    }, {} as Record<string, { category: string; total: number; count: number }>);
 
-  const chartData = Object.values(categoryData).map((data) => ({
-    category: data.category,
-    average: Number((data.total / data.count).toFixed(2)),
-    count: data.count,
-  }));
+    return Object.values(categoryData).map((data) => ({
+      category: data.category,
+      average: Number((data.total / data.count).toFixed(2)),
+      count: data.count,
+    }));
+  }, [indicators]);
 
   if (indicators.length === 0) {
     return (
@@ -50,12 +53,12 @@ export function IndicatorBarChart({ indicators, title }: IndicatorBarChartProps)
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis 
-            dataKey="category" 
+          <XAxis
+            dataKey="category"
             stroke="#9ca3af"
             style={{ fontSize: '12px' }}
           />
-          <YAxis 
+          <YAxis
             stroke="#9ca3af"
             style={{ fontSize: '12px' }}
           />
@@ -72,7 +75,7 @@ export function IndicatorBarChart({ indicators, title }: IndicatorBarChartProps)
               return [value, name];
             }}
           />
-          <Legend 
+          <Legend
             wrapperStyle={{ fontSize: '12px' }}
             formatter={(value) => {
               if (value === 'average') return 'Média';

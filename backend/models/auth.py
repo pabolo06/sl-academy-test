@@ -20,6 +20,7 @@ class LoginResponse(BaseModel):
     success: bool
     message: str
     user: Optional[dict] = None
+    redirect_url: Optional[str] = None
 
 
 class SessionData(BaseModel):

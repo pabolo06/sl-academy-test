@@ -86,6 +86,7 @@ class AuditLogger:
         user_id: str,
         hospital_id: str,
         email: str,
+        role: str = "unknown",
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None
     ) -> None:
@@ -95,7 +96,7 @@ class AuditLogger:
             event_type="AUTH_LOGIN_SUCCESS",
             user_id=user_id,
             hospital_id=hospital_id,
-            details={"email": email},
+            details={"email": email, "role": role},
             ip_address=ip_address,
             user_agent=user_agent
         )

@@ -8,18 +8,20 @@ export default function Home() {
         <p className="text-center text-muted-foreground mb-8">
           B2B Hospital Education and Management Platform
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href="/login"
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+            href="/login?role=manager"
+            aria-label="Login para Gestores"
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            Login
+            Login Gestor
           </a>
           <a
-            href="/docs"
-            className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
+            href="/login?role=doctor"
+            aria-label="Login para Médicos"
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            Documentation
+            Login Médico
           </a>
         </div>
       </div>

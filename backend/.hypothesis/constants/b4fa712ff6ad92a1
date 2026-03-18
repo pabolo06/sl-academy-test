@@ -1,0 +1,4 @@
+# file: C:\Users\pablo\OneDrive\Documentos\Oslo\backend\utils\session.py
+# hypothesis_version: 6.151.9
+
+['/', 'Not authenticated', 'created_at', 'email', 'hospital_id', 'last_activity', 'lax', 'production', 'role', 'sl_academy_session', 'user_id']

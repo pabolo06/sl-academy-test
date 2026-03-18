@@ -52,7 +52,11 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          accept_terms: formData.acceptTerms,
+        }),
       });
 
       const data = await response.json();

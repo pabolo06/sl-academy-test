@@ -26,8 +26,8 @@ CREATE POLICY "Managers can view hospital audit logs"
     ON audit_logs
     FOR SELECT
     USING (
-        hospital_id = auth.user_hospital_id()
-        AND auth.user_role() = 'manager'
+        hospital_id = public.user_hospital_id()
+        AND public.user_role() = 'manager'
     );
 
 -- RLS Policy: System can insert audit logs (service role)

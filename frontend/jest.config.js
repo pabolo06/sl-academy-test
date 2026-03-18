@@ -30,6 +30,7 @@ const customJestConfig = {
     '/node_modules/',
     '/.next/',
     '/e2e/',
+    '/__tests__/helpers/',
   ],
   coverageThreshold: {
     global: {

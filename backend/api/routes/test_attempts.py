@@ -42,7 +42,7 @@ async def submit_test_attempt(
         # Verify lesson exists and belongs to user's hospital
         lesson_response = db.table("lessons").select(
             "id, track_id, tracks(hospital_id)"
-        ).eq("id", str(attempt.lesson_id)).eq("deleted_at", None).single().execute()
+        ).eq("id", str(attempt.lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not lesson_response.data:
             raise HTTPException(
