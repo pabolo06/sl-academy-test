@@ -4,14 +4,15 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    // Asset prefix relativo força o Next.js a gerar caminhos portáveis sem / inicial
-    assetPrefix: '',
+    // Antigravity: No hardcoded paths or strict checks
     eslint: {
         ignoreDuringBuilds: true,
     },
     typescript: {
         ignoreBuildErrors: true,
     },
+    swcMinify: true,
+    reactStrictMode: false,
     env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
