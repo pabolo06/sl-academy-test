@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 
 # Variáveis de ambiente padrão
-ENV PYTHONPATH=/app/backend
+ENV PYTHONPATH=/app
 ENV PORT=7860
 
 # Comando para rodar a aplicação
