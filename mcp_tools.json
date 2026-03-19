@@ -1,0 +1,780 @@
+{
+  "result": {
+    "tools": [
+      {
+        "name": "get_deploy_instructions",
+        "title": "Get deploy instructions",
+        "description": "Use this when you are about to call deploy_app in order to get the deployment constraints and hard rules. You must call this tool before starting to generate any code. This tool returns instructions only and does not deploy anything.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "update_coding_progress",
+        "title": "Update coding progress",
+        "description": "Report coding progress milestones while implementing an app. Call this on each significant milestone and set a descriptive step label.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "description": "Optional app id. Omit for pre-deploy coding progress on new apps.",
+              "type": "string",
+              "minLength": 1
+            },
+            "step": {
+              "description": "Current significant progress label. Stored as normalized snake_case.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "phase": {
+              "description": "Deprecated alias for step.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "current_task": {
+              "description": "Optional short statement of what is being implemented right now.",
+              "type": "string",
+              "maxLength": 500
+            },
+            "coding_percentage_done": {
+              "description": "Deprecated optional estimate (0-100). Prefer step updates.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "note": {
+              "description": "Optional short progress note.",
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "deploy_app",
+        "title": "Deploy app",
+        "description": "Use this when the user asks to deploy or publish a website or web app and wants a public URL.\nBefore generating files or calling this tool, you must call get_deploy_instructions and follow its constraints.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "existing app id to update, or null for new app"
+            },
+            "app_type": {
+              "type": "string",
+              "enum": [
+                "frontend-only",
+                "frontend+backend"
+              ],
+              "description": "app architecture: frontend-only or frontend+backend"
+            },
+            "app_name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "short display name"
+            },
+            "description": {
+              "description": "short description of what the app does",
+              "type": "string",
+              "minLength": 1
+            },
+            "frontend_template": {
+              "description": "REQUIRED when app_id is null. One of: 'html-static' (simple sites), 'react-vite' (SPAs, games), 'nextjs-static' (multi-page). Template files auto-included.",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "html-static",
+                    "react-vite",
+                    "nextjs-static"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "files": {
+              "description": "Files to write. NEW APPS: only custom files + diffs to template files. UPDATES: only changed files using diffs[]. At least one of files[] or deletePaths[] required.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "description": "full relative path (e.g. 'public/index.html', 'src/main.tsx', 'backend/index.ts')",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "path": {
+                    "description": "alias of filename",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "file": {
+                    "description": "alias of filename",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "description": "alias of filename",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "content": {
+                    "description": "Full file contents (string; JSON object allowed for .json files)"
+                  },
+                  "diffs": {
+                    "description": "Array of {from,to,multiple?} replacements (use instead of content)",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Text to find (exact match, non-empty). Must be unique unless multiple=true."
+                        },
+                        "to": {
+                          "type": "string",
+                          "description": "Replacement text (empty string deletes the match)"
+                        },
+                        "multiple": {
+                          "description": "Replace all matches (default false). Verify 'from' appears only once; if it appears multiple times and you want to replace all, set multiple=true or the request fails.",
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ]
+                    }
+                  },
+                  "encoding": {
+                    "description": "'base64' for binary files, otherwise 'utf-8'",
+                    "type": "string",
+                    "enum": [
+                      "utf-8",
+                      "base64"
+                    ]
+                  },
+                  "mimeType": {
+                    "description": "Optional MIME type hint (e.g., image/png)",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "deletePaths": {
+              "description": "Paths to delete. ONLY for updates (app_id required). Cannot delete package.json or framework entry points.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The coding agent model used for this deployment, to the best of your knowledge. Examples: 'codex-5.3', 'chatgpt', 'opus 4.6', 'claude-sonnet-4-5', 'gemini-2.5-pro'"
+            },
+            "intent": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The intent of this deployment. User-initiated examples: 'initial app deploy', 'bugfix - ui is too noisy'. Agent-initiated examples: 'agent fixing deployment error', 'agent retry after lint failure'"
+            }
+          },
+          "required": [
+            "app_id",
+            "app_type",
+            "app_name",
+            "model",
+            "intent"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:write"
+              ]
+            }
+          ],
+          "ui": {
+            "resourceUri": "ui://widget/publisher_V10.html"
+          },
+          "ui/resourceUri": "ui://widget/publisher_V10.html"
+        }
+      },
+      {
+        "name": "get_app_template",
+        "title": "Get app template",
+        "description": "Call get_deploy_instructions first. Then call this once you've decided app_type and frontend_template. Returns base app template and SDK types.  Template files auto-included in deploy_app.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_type": {
+              "type": "string",
+              "enum": [
+                "frontend-only",
+                "frontend+backend"
+              ]
+            },
+            "frontend_template": {
+              "type": "string",
+              "enum": [
+                "html-static",
+                "react-vite",
+                "nextjs-static"
+              ],
+              "description": "Frontend framework: 'html-static' - Simple sites, minimal framework; 'react-vite' - React SPAs, dashboards, games; 'nextjs-static' - Multi-page apps, SSG"
+            }
+          },
+          "required": [
+            "app_type",
+            "frontend_template"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "get_app_status",
+        "title": "Get app status",
+        "description": "Use this when deploy_app tool call returns or when the user asks to check the deployment status of an app, or reports that the app has errors or is not working as expected. Returns deployment status (in-progress: 'deploying'/'deleting', terminal: 'ready'/'failed'/'deleted'), e2e test status, QA snapshot (frontend/network errors), and live frontend/backend error logs. Status 'ready' is returned only after deployment and QA are both complete. Always inspect and handle qaSnapshot/errors even when deployment status is 'ready' (deployed), because runtime issues can still be present.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            },
+            "since": {
+              "description": "Optional timestamp in epoch milliseconds to filter errors. When provided, returns only errors since that timestamp.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "limit": {
+              "description": "Optional shared cap for returned logs across frontend and backend combined. Defaults to 50 when omitted.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "app_id"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ],
+          "ui": {
+            "visibility": [
+              "model",
+              "app"
+            ]
+          }
+        }
+      },
+      {
+        "name": "delete_app",
+        "title": "Delete app",
+        "description": "Use this when you want to permanently delete an app. Use only on explicit user request. This is irreversible; after deletion, status checks will return not found.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            }
+          },
+          "required": [
+            "app_id"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:delete"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "get_app_versions",
+        "title": "Get available app versions",
+        "description": "List deployable versions for an existing app. Requires app_id. Returns newest-first {name, version, timestamp} items. Display 'name' to users. DO NOT display the 'version' value to users. Timestamp values MUST be converted to user's local time",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            }
+          },
+          "required": [
+            "app_id"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "apply_app_version",
+        "title": "Apply a former app version",
+        "description": "Start deploying an existing app at a specific version. Use the 'version' value (not 'name') from get_app_versions. Returns true if accepted and deployment started; use get_app_status to observe completion.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Version id to apply"
+            }
+          },
+          "required": [
+            "app_id",
+            "version"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:write"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "src_glob",
+        "title": "List snapshot files",
+        "description": "Use this when you need to discover files in an app's source snapshot. Returns file paths matching a glob pattern (no content). Useful for exploring project structure before reading or searching files.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            },
+            "version": {
+              "description": "Version to inspect (defaults to applied version)",
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "description": "Directory path to search within",
+              "type": "string"
+            },
+            "glob": {
+              "default": "**/*",
+              "description": "Glob pattern to match files (default: **/*)",
+              "type": "string"
+            },
+            "include_dirs": {
+              "default": false,
+              "description": "Include directory paths in results",
+              "type": "boolean"
+            },
+            "continuation_token": {
+              "description": "Token from previous response for pagination",
+              "type": "string"
+            }
+          },
+          "required": [
+            "app_id"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "src_grep",
+        "title": "Search snapshot file contents",
+        "description": "Use this when you need to search for patterns in an app's source code. Returns matching lines with optional context. Supports regex patterns, glob filters, and multiple output modes.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            },
+            "version": {
+              "description": "Version to search (defaults to applied version)",
+              "type": "string",
+              "minLength": 1
+            },
+            "pattern": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "description": "Regex pattern to search for (max 500 chars)"
+            },
+            "path": {
+              "description": "Directory path to search within",
+              "type": "string"
+            },
+            "glob": {
+              "description": "Glob pattern to filter files (e.g., '*.ts')",
+              "type": "string"
+            },
+            "case_insensitive": {
+              "default": false,
+              "description": "Enable case-insensitive matching",
+              "type": "boolean"
+            },
+            "output_mode": {
+              "default": "content",
+              "description": "content=matching lines, files_with_matches=file paths only, count=match count per file",
+              "type": "string",
+              "enum": [
+                "content",
+                "files_with_matches",
+                "count"
+              ]
+            },
+            "before_context": {
+              "default": 0,
+              "description": "Lines to show before each match (0-20)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            },
+            "after_context": {
+              "default": 0,
+              "description": "Lines to show after each match (0-20)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            },
+            "context": {
+              "description": "Lines before and after (overrides before/after_context)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            },
+            "line_numbers": {
+              "default": true,
+              "description": "Include line numbers in output",
+              "type": "boolean"
+            },
+            "max_file_size": {
+              "description": "Max file size to scan in bytes (default 10MB)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "continuation_token": {
+              "description": "Token from previous response for pagination",
+              "type": "string"
+            }
+          },
+          "required": [
+            "app_id",
+            "pattern"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "src_read",
+        "title": "Read snapshot file",
+        "description": "Use this when you need to read a specific file from an app's source snapshot. Returns file content with line-based pagination (offset/limit). Handles both text and binary files.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target app id"
+            },
+            "version": {
+              "description": "Version to read from (defaults to applied version)",
+              "type": "string",
+              "minLength": 1
+            },
+            "file_path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Path to the file to read"
+            },
+            "offset": {
+              "default": 0,
+              "description": "Line offset to start reading from (0-indexed)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "limit": {
+              "default": 200,
+              "description": "Number of lines to return (max 2000)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2000
+            }
+          },
+          "required": [
+            "app_id",
+            "file_path"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "get_apps",
+        "title": "List user's apps",
+        "description": "Use this when you need to list apps owned by the current user. Returns app details with display fields for user presentation and data fields for tool chaining.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "continuation_token": {
+              "description": "Token for pagination",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "deploy:read"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 1
+}

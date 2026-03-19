@@ -44,8 +44,28 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-
     try {
+      // 1. Tentar Login via Supabase diretamente
+      const { supabase, isSupabaseConfigured } = await import('@/lib/supabase');
+
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (error) {
+          setApiError(error.message === 'Invalid login credentials' ? 'Credenciais inválidas' : error.message);
+          setIsLoading(false);
+          return;
+        }
+
+        // Sucesso
+        router.push('/dashboard');
+        return;
+      }
+
+      // 2. Fallback para API legacy
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -66,10 +86,10 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to dashboard on success
+      // Redirect on success
       router.push('/dashboard');
     } catch (error) {
-      setApiError('Erro de conexão. Tente novamente.');
+      setApiError('Erro de conexão com o Supabase. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

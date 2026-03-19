@@ -29,7 +29,7 @@ async def get_track_lessons(
     """
     Get all lessons for a track
     
-    Returns lessons ordered by order field
+    Returns lessons ordered by position field
     Automatically filtered by hospital_id via RLS
     Cached for 10 minutes
     """
@@ -45,10 +45,10 @@ async def get_track_lessons(
                 detail="Track not found"
             )
         
-        # Get lessons ordered by order field
+        # Get lessons ordered by position field
         response = db.table("lessons").select("*").eq(
             "track_id", str(track_id)
-        ).is_("deleted_at", "null").order("order", desc=False).execute()
+        ).is_("deleted_at", "null").order("position", desc=False).execute()
         
         return [Lesson(**lesson) for lesson in response.data]
     
@@ -144,15 +144,15 @@ async def create_lesson(
                 detail="Track not found"
             )
         
-        # Check for duplicate order in track
+        # Check for duplicate position in track
         existing_order = db.table("lessons").select("id").eq(
             "track_id", str(lesson.track_id)
-        ).eq("order", lesson.order).is_("deleted_at", "null").execute()
+        ).eq("position", lesson.position).is_("deleted_at", "null").execute()
         
         if existing_order.data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Lesson with order {lesson.order} already exists in this track"
+                detail=f"Lesson with position {lesson.position} already exists in this track"
             )
         
         # Create lesson
@@ -162,7 +162,7 @@ async def create_lesson(
             "description": lesson.description,
             "video_url": lesson.video_url,
             "duration_seconds": lesson.duration_seconds,
-            "order": lesson.order
+            "position": lesson.position
         }).execute()
         
         if not response.data:
@@ -183,7 +183,7 @@ async def create_lesson(
         raise
     except Exception as e:
         logger.error(f"Error creating lesson: {str(e)}", exc_info=True)
-        logger.error(f"Lesson data: track_id={lesson.track_id}, title={lesson.title}, duration={lesson.duration_seconds}, order={lesson.order}")
+        logger.error(f"Lesson data: track_id={lesson.track_id}, title={lesson.title}, duration={lesson.duration_seconds}, position={lesson.position}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while creating lesson: {str(e)}"
@@ -200,13 +200,13 @@ async def update_lesson(
     """
     Update lesson (manager only)
     
-    Enforces unique ordering within track if order is updated
+    Enforces unique ordering within track if position is updated
     Automatically filtered by hospital_id via RLS
     """
     try:
         # Get current lesson
         current_lesson = db.table("lessons").select(
-            "track_id, order"
+            "track_id, position"
         ).eq("id", str(lesson_id)).is_("deleted_at", "null").single().execute()
         
         if not current_lesson.data:
@@ -225,20 +225,20 @@ async def update_lesson(
             update_data["video_url"] = lesson_update.video_url
         if lesson_update.duration_seconds is not None:
             update_data["duration_seconds"] = lesson_update.duration_seconds
-        if lesson_update.order is not None:
-            # Check for duplicate order in track
-            if lesson_update.order != current_lesson.data["order"]:
+        if lesson_update.position is not None:
+            # Check for duplicate position in track
+            if lesson_update.position != current_lesson.data["position"]:
                 existing_order = db.table("lessons").select("id").eq(
                     "track_id", current_lesson.data["track_id"]
-                ).eq("order", lesson_update.order).is_("deleted_at", "null").execute()
+                ).eq("position", lesson_update.position).is_("deleted_at", "null").execute()
                 
                 if existing_order.data:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Lesson with order {lesson_update.order} already exists in this track"
+                        detail=f"Lesson with position {lesson_update.position} already exists in this track"
                     )
             
-            update_data["order"] = lesson_update.order
+            update_data["position"] = lesson_update.position
         
         if not update_data:
             raise HTTPException(

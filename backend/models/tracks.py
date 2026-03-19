@@ -45,7 +45,7 @@ class LessonBase(BaseModel):
     description: Optional[str] = Field(None, max_length=2000, description="Lesson description")
     video_url: str = Field(..., description="Video URL")
     duration_seconds: int = Field(..., gt=0, description="Video duration in seconds")
-    order: int = Field(..., ge=0, description="Lesson order within track")
+    position: int = Field(..., ge=0, description="Lesson position within track")
     
     @validator("duration_seconds")
     def validate_duration(cls, v):
@@ -54,11 +54,11 @@ class LessonBase(BaseModel):
             raise ValueError("Duration must be greater than 0")
         return v
     
-    @validator("order")
-    def validate_order(cls, v):
-        """Validate order is non-negative"""
+    @validator("position")
+    def validate_position(cls, v):
+        """Validate position is non-negative"""
         if v < 0:
-            raise ValueError("Order must be greater than or equal to 0")
+            raise ValueError("Position must be greater than or equal to 0")
         return v
 
 
@@ -73,7 +73,7 @@ class LessonUpdate(BaseModel):
     description: Optional[str] = Field(None, max_length=2000)
     video_url: Optional[str] = None
     duration_seconds: Optional[int] = Field(None, gt=0)
-    order: Optional[int] = Field(None, ge=0)
+    position: Optional[int] = Field(None, ge=0)
     
     @validator("duration_seconds")
     def validate_duration(cls, v):
@@ -82,11 +82,11 @@ class LessonUpdate(BaseModel):
             raise ValueError("Duration must be greater than 0")
         return v
     
-    @validator("order")
-    def validate_order(cls, v):
-        """Validate order is non-negative"""
+    @validator("position")
+    def validate_position(cls, v):
+        """Validate position is non-negative"""
         if v is not None and v < 0:
-            raise ValueError("Order must be greater than or equal to 0")
+            raise ValueError("Position must be greater than or equal to 0")
         return v
 
 

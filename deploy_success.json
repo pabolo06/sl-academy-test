@@ -1,0 +1,13 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"message\":\"Validation failed. Fix the errors. For existing files: use diffs[] for surgical fixes. For missing/new files: send full content.\",\"project\":{\"app_type\":\"frontend+backend\",\"name\":\"SL Academy\",\"description\":\"B2B Hospital Education and Management Platform\"},\"deployment\":{\"app_id\":\"9cbbb57239b246af9e\",\"status\":\"failed\",\"url\":null,\"snapshot_version\":\"1773887770532\"},\"validation\":{\"valid\":false,\"errors\":[\"Linter failed to execute: Request must be smaller than 6291456 bytes for the InvokeFunction operation. Please retry.\"],\"warnings\":[]},\"next_step\":null,\"snapshot_summary\":{\"file_count\":574,\"top_level\":[\"404.html\",\"404/\",\"__next.__PAGE__.txt\",\"__next._full.txt\",\"__next._head.txt\",\"__next._index.txt\",\"__next._tree.txt\",\"_next/\",\"_not-found.html\",\"_not-found.txt\",\"_not-found/\",\"backend/\",\"dashboard.html\",\"dashboard.txt\",\"dashboard/\",\"doubts.html\",\"doubts.txt\",\"doubts/\",\"frontend/\",\"index.html\",\"index.txt\",\"lessons/\",\"login.html\",\"login.txt\",\"login/\",\"manager/\",\"manifest.json\",\"next.config.ts\",\"package.json\",\"pages/\",\"postcss.config.js\",\"privacy.html\",\"privacy.txt\",\"privacy/\",\"styles/\",\"sw.js\",\"tailwind.config.js\",\"terms.html\",\"terms.txt\",\"terms/\",\"tests/\",\"tracks.html\",\"tracks.txt\",\"tracks/\",\"tsconfig.json\"],\"missing_required_files\":[]},\"retry_after_seconds\":null,\"qa_snapshot\":null,\"errors\":null,\"e2e_tests\":null,\"crons\":null}"
+      }
+    ],
+    "isError": true
+  },
+  "jsonrpc": "2.0",
+  "id": 1
+}

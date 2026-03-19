@@ -51,7 +51,7 @@ export default function TrackManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       setError('Título é obrigatório');
       return;
@@ -66,7 +66,7 @@ export default function TrackManagementPage() {
       } else {
         await trackApi.create(formData);
       }
-      
+
       setShowForm(false);
       setFormData({ title: '', description: '' });
       setEditingTrack(null);
@@ -215,7 +215,7 @@ export default function TrackManagementPage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => window.location.href = `/manager/tracks/${track.id}/lessons`}
+                    onClick={() => window.location.href = `./tracks/${track.id}/lessons`}
                     className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
                   >
                     Gerenciar Aulas
@@ -228,11 +228,10 @@ export default function TrackManagementPage() {
                   </button>
                   <button
                     onClick={() => handleDelete(track.id)}
-                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                      deleteConfirm === track.id
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${deleteConfirm === track.id
                         ? 'bg-red-600 text-white hover:bg-red-700'
                         : 'bg-gray-700 text-white hover:bg-gray-600'
-                    }`}
+                      }`}
                   >
                     {deleteConfirm === track.id ? 'Confirmar?' : 'Excluir'}
                   </button>

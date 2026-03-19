@@ -47,7 +47,7 @@ export interface Lesson {
   description?: string;
   video_url: string;
   duration_seconds: number;
-  order: number;
+  position: number;
   created_at: string;
   updated_at: string;
   deleted_at?: string;

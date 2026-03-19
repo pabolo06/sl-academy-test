@@ -1,0 +1,39 @@
+{
+  "message": "Deployment failed. Error: Command failed: npm run build --loglevel=error",
+  "project": null,
+  "deployment": {
+    "app_id": "8138449c343a40e0ba",
+    "status": "failed",
+    "url": "",
+    "snapshot_version": null
+  },
+  "validation": {
+    "valid": false,
+    "errors": [
+      "Command failed: npm run build --loglevel=error",
+      "Frontend runtime: added 119 packages in 14s\nnpm notice\nnpm notice New major version of npm available! 10.9.4 -> 11.12.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.0\nnpm notice To update run: npm install -g npm@11.12.0\nnpm notice\n\n\nadded 2 packages in 1s\n\nTypeError: n.createContextKey is not a function\n    at 79929 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/chunks/243.js:3:18198)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at 54877 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/chunks/243.js:3:4590)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at 66299 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/chunks/243.js:3:2174)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at 31078 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/app/dashboard/page.js:1:715)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at a (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/app/dashboard/page.js:1:9094)\n    at /tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/app/dashboard/page.js:1:9125\n\n> Build error occurred\nError: Failed to collect page data for /dashboard\n    at <anonymous> (/tmp/8138449c343a40e0ba-1773870583941/frontend/node_modules/next/src/build/utils.ts:1784:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {\n  type: 'Error'\n}\n\n\n> sl-academy-deploy@1.0.0 build\n> cd frontend && npm install && npm run build && cp -r out ../\n\n\nadded 846 packages in 38s\n\n183 packages are looking for funding\n  run `npm fund` for details\n\n> sl-academy-frontend@1.0.0 build\n> next build\n\nAttention: Next.js now collects completely anonymous telemetry regarding usage.\nThis information is used to shape Next.js' roadmap and prioritize features.\nYou can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:\nhttps://nextjs.org/telemetry\n\n  ▲ Next.js 14.2.14\n  - Environments: .env.production\n\n   Creating an optimized production build ...\n ✓ Compiled successfully\n   Linting and checking validity of types ...\n\n   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.\n   The following mandatory changes were made to your tsconfig.json:\n\n   \t- jsx was set to preserve (next.js implements its own optimized jsx transform)\n\n   Collecting page data ...",
+      "Backend runtime: backend.js  226.8kb\n\n⚡ Done in 20ms\n\n\n  backend-realtime.js  26.4kb\n\n⚡ Done in 9ms"
+    ],
+    "warnings": []
+  },
+  "next_step": null,
+  "snapshot_summary": null,
+  "retry_after_seconds": null,
+  "qa_snapshot": null,
+  "errors": {
+    "frontend": [
+      {
+        "timestamp": 1773870670607,
+        "message": "\nadded 119 packages in 14s\nnpm notice\nnpm notice New major version of npm available! 10.9.4 -> 11.12.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.0\nnpm notice To update run: npm install -g npm@11.12.0\nnpm notice\n\n\nadded 2 packages in 1s\n\nTypeError: n.createContextKey is not a function\n    at 79929 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/chunks/243.js:3:18198)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at 54877 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/chunks/243.js:3:4590)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at 66299 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/chunks/243.js:3:2174)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at 31078 (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/app/dashboard/page.js:1:715)\n    at t (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/webpack-runtime.js:1:143)\n    at a (/tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/app/dashboard/page.js:1:9094)\n    at /tmp/8138449c343a40e0ba-1773870583941/frontend/.next/server/app/dashboard/page.js:1:9125\n\n> Build error occurred\nError: Failed to collect page data for /dashboard\n    at <anonymous> (/tmp/8138449c343a40e0ba-1773870583941/frontend/node_modules/next/src/build/utils.ts:1784:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {\n  type: 'Error'\n}\n\n\n> sl-academy-deploy@1.0.0 build\n> cd frontend && npm install && npm run build && cp -r out ../\n\n\nadded 846 packages in 38s\n\n183 packages are looking for funding\n  run `npm fund` for details\n\n> sl-academy-frontend@1.0.0 build\n> next build\n\nAttention: Next.js now collects completely anonymous telemetry regarding usage.\nThis information is used to shape Next.js' roadmap and prioritize features.\nYou can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:\nhttps://nextjs.org/telemetry\n\n  ▲ Next.js 14.2.14\n  - Environments: .env.production\n\n   Creating an optimized production build ...\n ✓ Compiled successfully\n   Linting and checking validity of types ...\n\n   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.\n   The following mandatory changes were made to your tsconfig.json:\n\n   \t- jsx was set to preserve (next.js implements its own optimized jsx transform)\n\n   Collecting page data ...\n\n"
+      }
+    ],
+    "backend": [
+      {
+        "timestamp": 1773870670606,
+        "message": "\n  backend.js  226.8kb\n\n⚡ Done in 20ms\n\n\n  backend-realtime.js  26.4kb\n\n⚡ Done in 9ms\n\n"
+      }
+    ]
+  },
+  "e2e_tests": null,
+  "crons": null
+}

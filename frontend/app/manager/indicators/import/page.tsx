@@ -175,8 +175,8 @@ export default function IndicatorImportPage() {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${isDragActive
-                ? 'border-blue-500 bg-blue-900/20'
-                : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+              ? 'border-blue-500 bg-blue-900/20'
+              : 'border-gray-700 bg-gray-800 hover:border-gray-600'
               }`}
           >
             <input {...getInputProps()} />
@@ -316,7 +316,7 @@ export default function IndicatorImportPage() {
                 Importar Outro Arquivo
               </button>
               <button
-                onClick={() => window.location.href = '/manager/indicators'}
+                onClick={() => window.location.href = '../indicators'}
                 className="flex-1 px-6 py-3 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors"
               >
                 Ver Indicadores

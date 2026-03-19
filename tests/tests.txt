@@ -1,0 +1,15 @@
+# Tests
+[sanity] Carregar Página Inicial
+1. Abrir "/"
+2. Verificar se contém "SL Academy"
+
+Login e Dashboard
+1. Abrir "/login"
+2. Digitar "admin@sl.com.br" em "#email"
+3. Digitar "admin123" em "#password"
+4. Clicar em "Entrar"
+5. Verificar se redireciona para "/dashboard"
+
+Visualizar Trilhas
+1. Abrir "/tracks"
+2. Verificar se existem elementos de trilha carregados
