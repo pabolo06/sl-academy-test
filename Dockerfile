@@ -17,8 +17,7 @@ COPY backend/ ./backend/
 
 # Variáveis de ambiente padrão
 ENV PYTHONPATH=/app/backend
-ENV PORT=8000
+ENV PORT=7860
 
 # Comando para rodar a aplicação
-# O Render/Koyeb/Railway injetam a variável PORT automaticamente
 CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}"]
