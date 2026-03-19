@@ -1,3 +1,12 @@
+import os
+import sys
+
+# Path patch: garante que os módulos internos (core, api, models) sejam encontrados 
+# mesmo quando o backend é executado a partir do root (como no Vercel)
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse

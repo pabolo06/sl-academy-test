@@ -62,23 +62,29 @@ def deploy_to_supabase():
             
             try:
                 with open(file_path, 'rb') as f:
-                    # Usamos upsert=true para sobrescrever arquivos existentes
+                    # Garantindo que o content-type seja passado corretamente
+                    # Na v2.28.2 do SDK, o parâmetro é file_options: dict
                     supabase.storage.from_(bucket_name).upload(
                         path=storage_path,
                         file=f,
-                        file_options={"content-type": content_type, "x-upsert": "true"} # Nota: em algumas versões do SDK é 'upsert'
+                        file_options={
+                            "content-type": content_type,
+                            "upsert": "true"
+                        }
                     )
                 print("OK")
                 files_uploaded += 1
             except Exception as e:
-                # Se o erro for que o arquivo já existe e o upsert falhou por sintaxe, 
-                # tentamos a sintaxe alternativa do SDK
+                # Fallback para sintaxe alternativa se houver erro de validação
                 try:
                     with open(file_path, 'rb') as f:
                         supabase.storage.from_(bucket_name).upload(
                             path=storage_path,
                             file=f,
-                            file_options={"content-type": content_type, "upsert": "true"}
+                            file_options={
+                                "contentType": content_type,
+                                "upsert": True
+                            }
                         )
                     print("OK (alt-syntax)")
                     files_uploaded += 1
