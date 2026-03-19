@@ -1,0 +1,6 @@
+{
+  "trailingSlash": true,
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://pabolo09-sl-academy-api.hf.space"
+  }
+}
