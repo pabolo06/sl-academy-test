@@ -1,9 +1,7 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
+  "outputDirectory": "out",
   "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://pabolo09-sl-academy-api.hf.space"
-  }
+  "cleanUrls": true,
+  "trailingSlash": true
 }
