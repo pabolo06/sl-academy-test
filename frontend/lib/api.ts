@@ -108,6 +108,14 @@ export const trackApi = {
 
 // Lesson API
 export const lessonApi = {
+  getAll: async () => {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.from('lessons').select('*').is('deleted_at', null).order('position');
+      if (error) throw new ApiError(500, error.message);
+      return data as Lesson[];
+    }
+    return fetchApi<Lesson[]>('/api/lessons');
+  },
   getByTrack: async (trackId: string) => {
     if (isSupabaseConfigured()) {
       const { data, error } = await supabase.from('lessons').select('*').eq('track_id', trackId).is('deleted_at', null).order('position');
