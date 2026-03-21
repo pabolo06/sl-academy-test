@@ -22,9 +22,9 @@ function getPageTitle(pathname: string): string {
     }
   }
 
+  if (pathname.startsWith('/lessons/')) return 'Aula';
   if (pathname.includes('/lessons')) return 'Gerenciar Aulas';
   if (pathname.includes('/tracks/')) return 'Detalhes da Trilha';
-  if (pathname.includes('/lessons/')) return 'Aula';
 
   return 'SL Academy';
 }

@@ -152,7 +152,14 @@ export const lessonApi = {
 
 // Question API
 export const questionApi = {
-  getByLesson: (lessonId: string, type?: 'pre' | 'post') => {
+  getByLesson: async (lessonId: string, type?: 'pre' | 'post') => {
+    if (isSupabaseConfigured()) {
+      let query = supabase.from('questions').select('*').eq('lesson_id', lessonId).is('deleted_at', null);
+      if (type) query = query.eq('type', type);
+      const { data, error } = await query;
+      if (error) throw new ApiError(500, error.message);
+      return (data || []) as Question[];
+    }
     const params = type ? `?type=${type}` : '';
     return fetchApi<Question[]>(`/api/lessons/${lessonId}/questions${params}`);
   },
