@@ -49,20 +49,25 @@ export default function LessonManagementClient() {
         if (trackId) fetchTrackAndLessons();
     }, [trackId]);
 
-    const fetchTrackAndLessons = async () => {
+    const fetchTrackAndLessons = async (retryCount = 0) => {
+        setIsLoading(true);
+        setError(null);
         try {
-            setIsLoading(true);
-            setError(null);
             const [trackData, lessonsData] = await Promise.all([
                 trackApi.getById(trackId),
                 lessonApi.getByTrack(trackId),
             ]);
             setTrack(trackData);
             setLessons(lessonsData.filter(l => !l.deleted_at).sort((a, b) => a.position - b.position));
-        } catch (err: any) {
-            setError(err.message || 'Erro ao carregar dados');
-        } finally {
             setIsLoading(false);
+        } catch (err: any) {
+            // Auto-retry once on network errors (Supabase session may need to initialize)
+            if (retryCount === 0 && err.message === 'Failed to fetch') {
+                setTimeout(() => fetchTrackAndLessons(1), 2000);
+            } else {
+                setError(err.message || 'Erro ao carregar dados');
+                setIsLoading(false);
+            }
         }
     };
 
@@ -198,7 +203,7 @@ export default function LessonManagementClient() {
                         </svg>
                         <div>
                             <p>{error}</p>
-                            <button onClick={() => setError(null)} className="mt-1 text-red-300 hover:text-red-200 underline text-xs">Fechar</button>
+                            <button onClick={() => fetchTrackAndLessons()} className="mt-1 text-red-300 hover:text-red-200 underline text-xs">Tentar novamente</button>
                         </div>
                     </div>
                 )}
