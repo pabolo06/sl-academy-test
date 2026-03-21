@@ -1,8 +1,3 @@
-/**
- * SL Academy Platform - Indicators Page
- * View and filter indicators with charts
- */
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,25 +18,16 @@ export default function IndicatorsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchIndicators();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [indicators, selectedCategory, startDate, endDate]);
+  useEffect(() => { fetchIndicators(); }, []);
+  useEffect(() => { applyFilters(); }, [indicators, selectedCategory, startDate, endDate]);
 
   const fetchIndicators = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
       const data = await indicatorApi.getAll();
       setIndicators(data);
-      
-      // Extract unique categories
-      const uniqueCategories = Array.from(new Set(data.map((i) => i.category)));
-      setCategories(uniqueCategories);
+      setCategories(Array.from(new Set(data.map((i) => i.category))));
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar indicadores');
     } finally {
@@ -51,20 +37,9 @@ export default function IndicatorsPage() {
 
   const applyFilters = () => {
     let filtered = [...indicators];
-
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter((i) => i.category === selectedCategory);
-    }
-
-    // Filter by date range
-    if (startDate) {
-      filtered = filtered.filter((i) => i.reference_date >= startDate);
-    }
-    if (endDate) {
-      filtered = filtered.filter((i) => i.reference_date <= endDate);
-    }
-
+    if (selectedCategory) filtered = filtered.filter((i) => i.category === selectedCategory);
+    if (startDate) filtered = filtered.filter((i) => i.reference_date >= startDate);
+    if (endDate) filtered = filtered.filter((i) => i.reference_date <= endDate);
     setFilteredIndicators(filtered);
   };
 
@@ -74,168 +49,169 @@ export default function IndicatorsPage() {
     setEndDate('');
   };
 
+  const hasFilters = selectedCategory || startDate || endDate;
+
   return (
     <DashboardLayout requiredRole="manager">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="page-header">
           <div>
-            <h1 className="text-3xl font-bold text-white">Indicadores</h1>
-            <p className="text-gray-400 mt-1">
-              Visualize e analise os indicadores do hospital
-            </p>
+            <h1 className="page-title">Indicadores</h1>
+            <p className="page-subtitle">Analise os indicadores hospitalares</p>
           </div>
-          <Link
-            href="/manager/indicators/import"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Importar Indicadores
+          <Link href="/manager/indicators/import" className="btn-primary flex-shrink-0">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            Importar
           </Link>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Total de Indicadores</p>
-            <p className="text-2xl font-bold text-white mt-1">{indicators.length}</p>
-          </div>
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Categorias</p>
-            <p className="text-2xl font-bold text-white mt-1">{categories.length}</p>
-          </div>
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Filtrados</p>
-            <p className="text-2xl font-bold text-white mt-1">{filteredIndicators.length}</p>
-          </div>
+          {[
+            { label: 'Total', value: indicators.length },
+            { label: 'Categorias', value: categories.length },
+            { label: 'Filtrados', value: filteredIndicators.length },
+          ].map(({ label, value }) => (
+            <div key={label} className="card p-4 text-center">
+              <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+            </div>
+          ))}
         </div>
 
         {/* Filters */}
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="card p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
             <div>
-              <label htmlFor="category-filter" className="block text-sm font-medium text-gray-300 mb-2">
-                Categoria
-              </label>
+              <label htmlFor="category-filter" className="form-label">Categoria</label>
               <select
                 id="category-filter"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
               >
                 <option value="">Todas</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label htmlFor="start-date" className="block text-sm font-medium text-gray-300 mb-2">
-                Data Inicial
-              </label>
+              <label htmlFor="start-date" className="form-label">Data Inicial</label>
               <input
                 id="start-date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
               />
             </div>
-
             <div>
-              <label htmlFor="end-date" className="block text-sm font-medium text-gray-300 mb-2">
-                Data Final
-              </label>
+              <label htmlFor="end-date" className="form-label">Data Final</label>
               <input
                 id="end-date"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
               />
             </div>
-
-            <div className="flex items-end">
-              <button
-                onClick={handleResetFilters}
-                className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-              >
-                Limpar Filtros
-              </button>
-            </div>
+            <button
+              onClick={handleResetFilters}
+              disabled={!hasFilters}
+              className="btn-secondary disabled:opacity-40"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Limpar
+            </button>
           </div>
         </div>
 
-        {/* Loading State */}
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        {/* Error */}
+        {error && (
+          <div className="alert-error">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <div>
+              <p>{error}</p>
+              <button onClick={fetchIndicators} className="mt-1.5 text-red-300 hover:text-red-200 underline text-xs">Tentar novamente</button>
+            </div>
           </div>
-        ) : error ? (
-          <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
-            <p className="text-red-300">{error}</p>
-            <button
-              onClick={fetchIndicators}
-              className="mt-3 px-4 py-2 bg-red-700 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-            >
-              Tentar Novamente
-            </button>
+        )}
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="space-y-4">
+            <div className="card h-64 flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
           </div>
         ) : filteredIndicators.length === 0 ? (
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
-            <p className="text-gray-400 mb-4">Nenhum indicador encontrado</p>
-            <Link
-              href="/manager/indicators/import"
-              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
-            >
-              Importar Indicadores
-            </Link>
+          <div className="card">
+            <div className="empty-state">
+              <svg className="empty-state-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+              </svg>
+              <p className="empty-state-title">Nenhum indicador encontrado</p>
+              <p className="empty-state-text">
+                {hasFilters ? 'Tente outros filtros ou limpe a busca' : 'Importe indicadores para começar a análise'}
+              </p>
+              {!hasFilters && (
+                <Link href="/manager/indicators/import" className="btn-primary">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  Importar Indicadores
+                </Link>
+              )}
+            </div>
           </div>
         ) : (
           <>
             {/* Charts */}
-            <div className="space-y-6">
-              <IndicatorLineChart
-                indicators={filteredIndicators}
-                title="Tendência ao Longo do Tempo"
-              />
-              
-              <IndicatorBarChart
-                indicators={filteredIndicators}
-                title="Comparação por Categoria"
-              />
+            <div className="space-y-4">
+              <div className="card p-5">
+                <IndicatorLineChart indicators={filteredIndicators} title="Tendência ao Longo do Tempo" />
+              </div>
+              <div className="card p-5">
+                <IndicatorBarChart indicators={filteredIndicators} title="Comparação por Categoria" />
+              </div>
             </div>
 
             {/* Table */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-              <div className="p-4 border-b border-gray-700">
-                <h3 className="text-lg font-semibold text-white">Detalhes dos Indicadores</h3>
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+                <h3 className="section-title">Detalhes</h3>
+                <span className="badge badge-blue">{filteredIndicators.length} registros</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-900">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Nome</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Categoria</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Valor</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Unidade</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Data</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Observações</th>
+                  <thead>
+                    <tr className="bg-white/[0.02] border-b border-white/[0.06]">
+                      {['Nome', 'Categoria', 'Valor', 'Unidade', 'Data', 'Observações'].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">{h}</th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-700">
+                  <tbody className="divide-y divide-white/[0.04]">
                     {filteredIndicators.map((indicator) => (
-                      <tr key={indicator.id} className="hover:bg-gray-700/50">
-                        <td className="px-4 py-3 text-sm text-gray-300">{indicator.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-300">{indicator.category}</td>
-                        <td className="px-4 py-3 text-sm text-gray-300 font-medium">{indicator.value}</td>
-                        <td className="px-4 py-3 text-sm text-gray-400">{indicator.unit || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-gray-400">
+                      <tr key={indicator.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-4 py-3 text-sm text-slate-200 font-medium">{indicator.name}</td>
+                        <td className="px-4 py-3 text-sm">
+                          <span className="badge badge-blue">{indicator.category}</span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-white font-semibold tabular-nums">{indicator.value}</td>
+                        <td className="px-4 py-3 text-sm text-slate-400">{indicator.unit || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-slate-400 tabular-nums">
                           {new Date(indicator.reference_date).toLocaleDateString('pt-BR')}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-400">{indicator.notes || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-slate-400 max-w-[200px] truncate">{indicator.notes || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
