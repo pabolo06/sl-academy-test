@@ -1,8 +1,3 @@
-/**
- * SL Academy Platform - Doubts Page (Doctor View)
- * List and manage user's doubts
- */
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +6,16 @@ import { DoubtCard } from '@/components/DoubtCard';
 import { DoubtForm } from '@/components/DoubtForm';
 import { doubtApi, lessonApi } from '@/lib/api';
 import { Doubt, Lesson } from '@/types';
+
+function SkeletonDoubt() {
+  return (
+    <div className="card p-4 space-y-3">
+      <div className="skeleton h-4 w-3/4" />
+      <div className="skeleton h-3 w-full" />
+      <div className="skeleton h-3 w-1/2" />
+    </div>
+  );
+}
 
 export default function DoubtsPage() {
   const [doubts, setDoubts] = useState<Doubt[]>([]);
@@ -25,10 +30,8 @@ export default function DoubtsPage() {
     try {
       setIsLoading(true);
       setError(null);
-      
       const status = statusFilter === 'all' ? undefined : statusFilter;
       const lessonId = selectedLesson || undefined;
-      
       const data = await doubtApi.getAll(status, lessonId);
       setDoubts(data);
     } catch (err: any) {
@@ -40,72 +43,79 @@ export default function DoubtsPage() {
 
   useEffect(() => {
     fetchDoubts();
-  }, [statusFilter, selectedLesson]);
+    lessonApi.getAll?.().then(setLessons).catch(() => {});
+  }, []);
+
+  useEffect(() => { fetchDoubts(); }, [statusFilter, selectedLesson]);
 
   const handleDoubtSubmitted = () => {
     setShowForm(false);
     fetchDoubts();
   };
 
-  const filteredDoubts = doubts;
-
-  const pendingCount = doubts.filter(d => d.status === 'pending').length;
-  const answeredCount = doubts.filter(d => d.status === 'answered').length;
+  const pendingCount = doubts.filter((d) => d.status === 'pending').length;
+  const answeredCount = doubts.filter((d) => d.status === 'answered').length;
 
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="page-header">
           <div>
-            <h1 className="text-3xl font-bold text-white">Minhas Dúvidas</h1>
-            <p className="text-gray-400 mt-1">
-              Gerencie suas dúvidas sobre as aulas
-            </p>
+            <h1 className="page-title">Minhas Dúvidas</h1>
+            <p className="page-subtitle">Gerencie suas dúvidas sobre as aulas</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className={showForm ? 'btn-secondary' : 'btn-primary'}
           >
-            {showForm ? 'Cancelar' : 'Nova Dúvida'}
+            {showForm ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Nova Dúvida
+              </>
+            )}
           </button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Total</p>
-            <p className="text-2xl font-bold text-white mt-1">{doubts.length}</p>
-          </div>
-          <div className="bg-gray-800 border border-yellow-700/50 rounded-lg p-4">
-            <p className="text-sm text-yellow-300">Pendentes</p>
-            <p className="text-2xl font-bold text-white mt-1">{pendingCount}</p>
-          </div>
-          <div className="bg-gray-800 border border-green-700/50 rounded-lg p-4">
-            <p className="text-sm text-green-300">Respondidas</p>
-            <p className="text-2xl font-bold text-white mt-1">{answeredCount}</p>
-          </div>
+          {[
+            { label: 'Total', value: doubts.length, color: 'text-white' },
+            { label: 'Pendentes', value: pendingCount, color: 'text-amber-400' },
+            { label: 'Respondidas', value: answeredCount, color: 'text-emerald-400' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="card p-4 text-center">
+              <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+            </div>
+          ))}
         </div>
 
         {/* New Doubt Form */}
         {showForm && (
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Nova Dúvida</h2>
+          <div className="card p-6">
+            <h2 className="section-title mb-4">Nova Dúvida</h2>
             <div className="mb-4">
-              <label htmlFor="lesson-select" className="block text-sm font-medium text-gray-300 mb-2">
-                Selecione a aula
-              </label>
+              <label htmlFor="lesson-select" className="form-label">Selecione a aula</label>
               <select
                 id="lesson-select"
                 value={selectedLesson}
                 onChange={(e) => setSelectedLesson(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
               >
                 <option value="">Selecione uma aula...</option>
                 {lessons.map((lesson) => (
-                  <option key={lesson.id} value={lesson.id}>
-                    {lesson.title}
-                  </option>
+                  <option key={lesson.id} value={lesson.id}>{lesson.title}</option>
                 ))}
               </select>
             </div>
@@ -116,72 +126,75 @@ export default function DoubtsPage() {
         )}
 
         {/* Filters */}
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-300 mb-2">
-                Status
-              </label>
+        <div className="card p-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="status-filter" className="form-label">Status</label>
               <select
                 id="status-filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
               >
                 <option value="all">Todas</option>
                 <option value="pending">Pendentes</option>
                 <option value="answered">Respondidas</option>
               </select>
             </div>
-            <div className="flex-1">
-              <label htmlFor="lesson-filter" className="block text-sm font-medium text-gray-300 mb-2">
-                Aula
-              </label>
+            <div>
+              <label htmlFor="lesson-filter" className="form-label">Aula</label>
               <select
                 id="lesson-filter"
                 value={selectedLesson}
                 onChange={(e) => setSelectedLesson(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
               >
                 <option value="">Todas as aulas</option>
                 {lessons.map((lesson) => (
-                  <option key={lesson.id} value={lesson.id}>
-                    {lesson.title}
-                  </option>
+                  <option key={lesson.id} value={lesson.id}>{lesson.title}</option>
                 ))}
               </select>
             </div>
           </div>
         </div>
 
+        {/* Error */}
+        {error && (
+          <div className="alert-error">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <div>
+              <p>{error}</p>
+              <button onClick={fetchDoubts} className="mt-1.5 text-red-300 hover:text-red-200 underline text-xs">Tentar novamente</button>
+            </div>
+          </div>
+        )}
+
         {/* Doubts List */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => <SkeletonDoubt key={i} />)}
           </div>
-        ) : error ? (
-          <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
-            <p className="text-red-300">{error}</p>
-            <button
-              onClick={fetchDoubts}
-              className="mt-3 px-4 py-2 bg-red-700 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-            >
-              Tentar Novamente
-            </button>
-          </div>
-        ) : filteredDoubts.length === 0 ? (
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
-            <p className="text-gray-400">Nenhuma dúvida encontrada</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
-            >
-              Criar Primeira Dúvida
-            </button>
+        ) : doubts.length === 0 ? (
+          <div className="card">
+            <div className="empty-state">
+              <svg className="empty-state-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              <p className="empty-state-title">Nenhuma dúvida encontrada</p>
+              <p className="empty-state-text">Envie uma dúvida sobre qualquer aula das trilhas</p>
+              <button onClick={() => setShowForm(true)} className="btn-primary">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Criar Primeira Dúvida
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredDoubts.map((doubt) => (
+          <div className="space-y-3">
+            {doubts.map((doubt) => (
               <DoubtCard key={doubt.id} doubt={doubt} onUpdate={fetchDoubts} />
             ))}
           </div>

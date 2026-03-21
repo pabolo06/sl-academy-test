@@ -181,7 +181,7 @@ export const testAttemptApi = {
 export const doubtApi = {
   getAll: async (status?: string, lessonId?: string) => {
     if (isSupabaseConfigured()) {
-      let query = supabase.from('doubts').select('*, profiles!user_id(full_name), lessons(title)');
+      let query = supabase.from('doubts').select('*, lessons(title)');
       if (status) query = query.eq('status', status);
       if (lessonId) query = query.eq('lesson_id', lessonId);
       const { data, error } = await query.is('deleted_at', null);
