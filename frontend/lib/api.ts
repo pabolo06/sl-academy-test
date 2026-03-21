@@ -20,11 +20,13 @@ async function fetchApi<T>(
 ): Promise<T> {
   try {
     const url = `${API_URL}${endpoint}`;
+    const authHeaders = await getAuthHeaders();
     const response = await fetch(url, {
       ...options,
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...options.headers,
       },
     });
@@ -45,6 +47,18 @@ async function fetchApi<T>(
 }
 
 import { supabase, isSupabaseConfigured } from './supabase';
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  try {
+    if (isSupabaseConfigured()) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        return { 'Authorization': `Bearer ${session.access_token}` };
+      }
+    }
+  } catch {}
+  return {};
+}
 
 // Track API
 export const trackApi = {
@@ -129,7 +143,7 @@ export const testAttemptApi = {
 export const doubtApi = {
   getAll: async (status?: string, lessonId?: string) => {
     if (isSupabaseConfigured()) {
-      let query = supabase.from('doubts').select('*, profiles(full_name), lessons(title)');
+      let query = supabase.from('doubts').select('*, profiles!user_id(full_name), lessons(title)');
       if (status) query = query.eq('status', status);
       if (lessonId) query = query.eq('lesson_id', lessonId);
       const { data, error } = await query.is('deleted_at', null);
