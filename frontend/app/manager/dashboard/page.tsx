@@ -45,13 +45,15 @@ export default function ManagerDashboardPage() {
       setError(null);
 
       // Fetch all data in parallel
-      const [indicatorsData, tracksData] = await Promise.all([
+      const [indicatorsResult, tracksResult] = await Promise.allSettled([
         indicatorApi.getAll(),
         trackApi.getAll(),
       ]);
+      const indicatorsData = indicatorsResult.status === 'fulfilled' ? indicatorsResult.value : [];
+      const tracksData = tracksResult.status === 'fulfilled' ? tracksResult.value : [];
 
       // Fetch lessons for all tracks
-      const lessonsPromises = tracksData.map((track) => lessonApi.getByTrack(track.id));
+      const lessonsPromises = tracksData.map((track) => lessonApi.getByTrack(track.id).catch(() => []));
       const lessonsArrays = await Promise.all(lessonsPromises);
       const allLessons = lessonsArrays.flat();
 

@@ -25,31 +25,19 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
         .eq('id', user.id)
         .single();
 
-      if (profile) {
-        return {
-          id: user.id,
-          email: user.email || '',
-          role: profile.role,
-          hospital_id: profile.hospital_id,
-          hospital_name: profile.hospitals?.name,
-          is_focal_point: profile.is_focal_point,
-          created_at: profile.created_at,
-          updated_at: profile.updated_at
-        } as UserProfile;
-      }
+      return {
+        id: user.id,
+        email: user.email || '',
+        role: profile?.role || 'doctor',
+        hospital_id: profile?.hospital_id,
+        hospital_name: profile?.hospitals?.name,
+        is_focal_point: profile?.is_focal_point,
+        created_at: profile?.created_at,
+        updated_at: profile?.updated_at
+      } as UserProfile;
     }
 
-    const response = await fetch(`${API_URL}/api/auth/me`, {
-      credentials: 'include',
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    return data.user;
+    return null;
   } catch (error) {
     console.error('Error fetching current user:', error);
     return null;
@@ -61,6 +49,10 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
  */
 export async function logout(): Promise<void> {
   try {
+    if (isSupabaseConfigured()) {
+      await supabase.auth.signOut();
+      return;
+    }
     await fetch(`${API_URL}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
