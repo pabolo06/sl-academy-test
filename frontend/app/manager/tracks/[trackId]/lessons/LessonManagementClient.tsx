@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { trackApi, lessonApi } from '@/lib/api';
 import { Track, Lesson } from '@/types';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 function SkeletonLesson() {
     return (
@@ -46,7 +47,13 @@ export default function LessonManagementClient() {
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
     useEffect(() => {
-        if (trackId) fetchTrackAndLessons();
+        if (!trackId) return;
+        // Wait for Supabase session to initialize before fetching
+        if (isSupabaseConfigured()) {
+            supabase.auth.getSession().then(() => fetchTrackAndLessons());
+        } else {
+            fetchTrackAndLessons();
+        }
     }, [trackId]);
 
     const fetchTrackAndLessons = async (retryCount = 0) => {
