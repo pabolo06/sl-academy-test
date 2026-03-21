@@ -78,17 +78,32 @@ export const trackApi = {
     }
     return fetchApi<Track>(`/api/tracks/${id}`);
   },
-  create: (data: Partial<Track>) => fetchApi<Track>('/api/tracks', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-  update: (id: string, data: Partial<Track>) => fetchApi<Track>(`/api/tracks/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  }),
-  delete: (id: string) => fetchApi<void>(`/api/tracks/${id}`, {
-    method: 'DELETE',
-  }),
+  create: async (data: Partial<Track>) => {
+    if (isSupabaseConfigured()) {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data: profile } = await supabase.from('profiles').select('hospital_id').eq('id', session?.user?.id || '').single();
+      const { data: result, error } = await supabase.from('tracks').insert({ ...data, hospital_id: profile?.hospital_id }).select().single();
+      if (error) throw new ApiError(500, error.message);
+      return result as Track;
+    }
+    return fetchApi<Track>('/api/tracks', { method: 'POST', body: JSON.stringify(data) });
+  },
+  update: async (id: string, data: Partial<Track>) => {
+    if (isSupabaseConfigured()) {
+      const { data: result, error } = await supabase.from('tracks').update(data).eq('id', id).select().single();
+      if (error) throw new ApiError(500, error.message);
+      return result as Track;
+    }
+    return fetchApi<Track>(`/api/tracks/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  },
+  delete: async (id: string) => {
+    if (isSupabaseConfigured()) {
+      const { error } = await supabase.from('tracks').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw new ApiError(500, error.message);
+      return;
+    }
+    return fetchApi<void>(`/api/tracks/${id}`, { method: 'DELETE' });
+  },
 };
 
 // Lesson API
@@ -109,17 +124,30 @@ export const lessonApi = {
     }
     return fetchApi<LessonDetail>(`/api/lessons/${id}`);
   },
-  create: (data: Partial<Lesson>) => fetchApi<Lesson>('/api/lessons', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-  update: (id: string, data: Partial<Lesson>) => fetchApi<Lesson>(`/api/lessons/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  }),
-  delete: (id: string) => fetchApi<void>(`/api/lessons/${id}`, {
-    method: 'DELETE',
-  }),
+  create: async (data: Partial<Lesson>) => {
+    if (isSupabaseConfigured()) {
+      const { data: result, error } = await supabase.from('lessons').insert(data).select().single();
+      if (error) throw new ApiError(500, error.message);
+      return result as Lesson;
+    }
+    return fetchApi<Lesson>('/api/lessons', { method: 'POST', body: JSON.stringify(data) });
+  },
+  update: async (id: string, data: Partial<Lesson>) => {
+    if (isSupabaseConfigured()) {
+      const { data: result, error } = await supabase.from('lessons').update(data).eq('id', id).select().single();
+      if (error) throw new ApiError(500, error.message);
+      return result as Lesson;
+    }
+    return fetchApi<Lesson>(`/api/lessons/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  },
+  delete: async (id: string) => {
+    if (isSupabaseConfigured()) {
+      const { error } = await supabase.from('lessons').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw new ApiError(500, error.message);
+      return;
+    }
+    return fetchApi<void>(`/api/lessons/${id}`, { method: 'DELETE' });
+  },
 };
 
 // Question API
@@ -136,7 +164,17 @@ export const testAttemptApi = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  getByLesson: (lessonId: string) => fetchApi<TestAttempt[]>(`/api/test-attempts/lessons/${lessonId}/attempts`),
+  getByLesson: async (lessonId: string) => {
+    if (isSupabaseConfigured()) {
+      const { data: { session } } = await supabase.auth.getSession();
+      let query = supabase.from('test_attempts').select('*').eq('lesson_id', lessonId).order('completed_at', { ascending: false });
+      if (session?.user?.id) query = query.eq('user_id', session.user.id);
+      const { data, error } = await query;
+      if (error) throw new ApiError(500, error.message);
+      return (data || []) as TestAttempt[];
+    }
+    return fetchApi<TestAttempt[]>(`/api/test-attempts/lessons/${lessonId}/attempts`);
+  },
 };
 
 // Doubt API
