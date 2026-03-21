@@ -43,7 +43,7 @@ export default function DoubtsPage() {
 
   useEffect(() => {
     fetchDoubts();
-    lessonApi.getAll?.().then(setLessons).catch(() => {});
+    // Lessons are loaded per-track; skip pre-loading here
   }, []);
 
   useEffect(() => { fetchDoubts(); }, [statusFilter, selectedLesson]);

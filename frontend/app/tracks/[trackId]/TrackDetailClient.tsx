@@ -7,6 +7,20 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { trackApi, lessonApi } from '@/lib/api';
 import { Track, Lesson } from '@/types';
 
+function SkeletonLesson() {
+    return (
+        <div className="card p-5 flex items-start gap-4">
+            <div className="skeleton w-14 h-14 rounded-xl flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+                <div className="skeleton h-4 w-1/2" />
+                <div className="skeleton h-3 w-3/4" />
+                <div className="skeleton h-3 w-1/4" />
+            </div>
+            <div className="skeleton w-6 h-6 rounded" />
+        </div>
+    );
+}
+
 export default function TrackDetailClient() {
     const params = useParams();
     const router = useRouter();
@@ -18,23 +32,19 @@ export default function TrackDetailClient() {
     const [error, setError] = useState<string>('');
 
     useEffect(() => {
-        if (trackId) {
-            loadTrackAndLessons();
-        }
+        if (trackId) loadTrackAndLessons();
     }, [trackId]);
 
     const loadTrackAndLessons = async () => {
         try {
             setLoading(true);
             setError('');
-
             const [trackData, lessonsData] = await Promise.all([
                 trackApi.getById(trackId),
                 lessonApi.getByTrack(trackId),
             ]);
-
             setTrack(trackData);
-            setLessons(lessonsData);
+            setLessons(lessonsData.filter(l => !l.deleted_at).sort((a, b) => a.position - b.position));
         } catch (err: any) {
             setError(err.message || 'Erro ao carregar trilha');
         } finally {
@@ -43,87 +53,114 @@ export default function TrackDetailClient() {
     };
 
     const formatDuration = (seconds: number): string => {
-        const minutes = Math.floor(seconds / 60);
-        if (minutes < 60) return `${minutes} min`;
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-        return `${hours}h ${remainingMinutes}min`;
+        const m = Math.floor(seconds / 60);
+        if (m < 60) return `${m} min`;
+        const h = Math.floor(m / 60);
+        const rem = m % 60;
+        return rem > 0 ? `${h}h ${rem}min` : `${h}h`;
     };
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="max-w-3xl mx-auto space-y-6">
+                {/* Back */}
                 <button
                     onClick={() => router.back()}
-                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                    className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
                 >
-                    ← Voltar
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Voltar
                 </button>
 
                 {error && (
-                    <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
-                        <p className="text-red-200">{error}</p>
+                    <div className="alert-error">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        <p>{error}</p>
                     </div>
                 )}
 
                 {loading ? (
-                    <div className="animate-pulse space-y-6">
-                        <div className="h-8 bg-gray-700 rounded w-1/3"></div>
-                        <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="h-24 bg-gray-800 rounded-lg"></div>
-                            ))}
+                    <>
+                        <div className="space-y-2">
+                            <div className="skeleton h-7 w-1/2 rounded-lg" />
+                            <div className="skeleton h-4 w-3/4 rounded" />
                         </div>
-                    </div>
+                        <div className="space-y-3">
+                            {[1, 2, 3].map(i => <SkeletonLesson key={i} />)}
+                        </div>
+                    </>
                 ) : track ? (
                     <>
-                        <div>
-                            <h1 className="text-3xl font-bold text-white mb-2">{track.title}</h1>
-                            {track.description && (
-                                <p className="text-gray-400">{track.description}</p>
-                            )}
-                            <p className="text-sm text-gray-500 mt-2">
-                                {lessons.length} {lessons.length === 1 ? 'aula' : 'aulas'}
-                            </p>
+                        {/* Track Header */}
+                        <div className="card p-6">
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-blue-600/15 border border-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h1 className="text-xl font-bold text-slate-100">{track.title}</h1>
+                                    {track.description && (
+                                        <p className="text-sm text-slate-400 mt-1">{track.description}</p>
+                                    )}
+                                    <p className="text-xs text-slate-500 mt-2">
+                                        {lessons.length} {lessons.length === 1 ? 'aula' : 'aulas'}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         {lessons.length === 0 ? (
-                            <div className="bg-gray-800 rounded-lg p-12 border border-gray-700 text-center">
-                                <p className="text-gray-400 text-lg">
-                                    Nenhuma aula disponível nesta trilha
-                                </p>
+                            <div className="card">
+                                <div className="empty-state">
+                                    <svg className="empty-state-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                                    </svg>
+                                    <p className="empty-state-title">Nenhuma aula disponível</p>
+                                    <p className="empty-state-text">Esta trilha ainda não possui aulas publicadas</p>
+                                </div>
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {lessons.map((lesson, index) => (
                                     <Link
                                         key={lesson.id}
                                         href={`/lessons/${lesson.id}`}
-                                        className="block bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-blue-500 transition-colors group"
+                                        className="card p-5 flex items-start gap-4 hover:border-blue-500/30 hover:bg-blue-600/[0.03] transition-all group block"
                                     >
-                                        <div className="flex items-start gap-4">
-                                            <div className="flex-shrink-0 px-3 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                                                Aula {index + 1}
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">
-                                                    {lesson.title}
-                                                </h3>
-                                                {lesson.description && (
-                                                    <p className="text-gray-400 text-sm mb-2 line-clamp-2">
-                                                        {lesson.description}
-                                                    </p>
-                                                )}
-                                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                                    <span>⏱️ {formatDuration(lesson.duration_seconds)}</span>
-                                                    <span>📹 Vídeo</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex-shrink-0 text-blue-400 group-hover:text-blue-300">
-                                                →
+                                        <div className="flex-shrink-0 w-11 h-11 bg-blue-600/15 border border-blue-500/20 rounded-xl flex items-center justify-center group-hover:bg-blue-600/25 transition-colors">
+                                            <span className="text-sm font-bold text-blue-400">{index + 1}</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-sm font-semibold text-slate-100 group-hover:text-blue-300 transition-colors leading-snug">
+                                                {lesson.title}
+                                            </h3>
+                                            {lesson.description && (
+                                                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{lesson.description}</p>
+                                            )}
+                                            <div className="flex items-center gap-3 mt-1.5">
+                                                <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {formatDuration(lesson.duration_seconds)}
+                                                </span>
+                                                <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                                                    </svg>
+                                                    Vídeo
+                                                </span>
                                             </div>
                                         </div>
+                                        <svg className="w-4 h-4 text-slate-600 group-hover:text-blue-400 flex-shrink-0 mt-1 transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
                                     </Link>
                                 ))}
                             </div>
