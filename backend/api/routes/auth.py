@@ -222,113 +222,38 @@ async def login(
     Authenticate user and create session.
 
     .. deprecated::
-        This endpoint is deprecated. Use ``POST /login/medico`` for doctor users
-        or ``POST /login/gestor`` for manager users instead. This endpoint is
-        kept for backwards compatibility and will be removed in a future release.
-
-    - **email**: User email address
-    - **password**: User password
-    - **accept_terms**: User consent to terms and privacy policy
-
-    Returns encrypted session cookie with user data
+        Use ``POST /login/medico`` or ``POST /login/gestor`` instead.
+        Este endpoint faz pré-autenticação para descobrir o role e delega
+        ao handler correto. Mantido por compatibilidade.
     """
+    # Faz login sem restrição de role para descobrir o role do usuário
+    role_redirect_map = {
+        "doctor": settings.doctor_frontend_url,
+        "manager": settings.manager_frontend_url,
+    }
+
     try:
-        # Check rate limit
-        await check_login_rate_limit(request)
-
-        # Validate consent
-        if not credentials.accept_terms:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="You must accept the terms of service and privacy policy"
-            )
-        
-        # Authenticate with Supabase Auth
-        auth_response = db.auth.sign_in_with_password({
-            "email": credentials.email,
-            "password": credentials.password
-        })
-        
-        if not auth_response.user:
-            # Log failed attempt
-            await logger_service.log_auth_failure(
-                db=db,
-                email=credentials.email,
-                reason="Invalid credentials",
-                ip_address=request.client.host if request.client else "unknown",
-                user_agent=request.headers.get("user-agent", "unknown")
-            )
-            
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
-            )
-        
-        user = auth_response.user
-        
-        # Get user profile with hospital and role
-        profile_response = db.table("profiles").select(
-            "id, hospital_id, role, consent_timestamp, hospitals(name)"
-        ).eq("id", user.id).is_("deleted_at", "null").single().execute()
-        
-        if not profile_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User profile not found"
-            )
-        
-        profile = profile_response.data
-        
-        # Update consent timestamp if not already set or if user is re-consenting
-        if not profile.get("consent_timestamp"):
-            db.table("profiles").update({
-                "consent_timestamp": datetime.utcnow().isoformat()
-            }).eq("id", user.id).execute()
-            logger.info(f"Consent recorded for user: {user.email}")
-        
-        # Create encrypted session cookie
-        session_manager.create_session(
-            response=response,
-            user_id=str(user.id),
-            email=user.email,
-            hospital_id=str(profile["hospital_id"]),
-            role=profile["role"]
+        for role, redirect_url in role_redirect_map.items():
+            try:
+                return await _domain_login(
+                    request=request,
+                    response=response,
+                    credentials=credentials,
+                    db=db,
+                    logger_service=logger_service,
+                    expected_role=role,
+                    redirect_url=redirect_url,
+                )
+            except HTTPException as e:
+                if e.status_code == status.HTTP_403_FORBIDDEN:
+                    continue  # Tenta o próximo role
+                raise
+        # Se nenhum role funcionou, credenciais inválidas ou role desconhecido
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
         )
-        
-        # Log successful login
-        await logger_service.log_auth_success(
-            db=db,
-            user_id=str(user.id),
-            hospital_id=str(profile["hospital_id"]),
-            email=user.email,
-            role=profile["role"],
-            ip_address=request.client.host if request.client else "unknown",
-            user_agent=request.headers.get("user-agent", "unknown")
-        )
-        logger.info(f"User logged in: {user.email} (role: {profile['role']})")
-        
-        # Determine redirect_url based on role
-        role_redirect_map = {
-            "doctor": settings.doctor_frontend_url,
-            "manager": settings.manager_frontend_url,
-        }
-        redirect_url = role_redirect_map.get(profile["role"])
-
-        return LoginResponse(
-            success=True,
-            message="Login successful",
-            user={
-                "id": str(user.id),
-                "email": user.email,
-                "role": profile["role"],
-                "hospital_id": str(profile["hospital_id"]),
-                "hospital_name": profile["hospitals"]["name"] if profile.get("hospitals") else None
-            },
-            redirect_url=redirect_url
-        )
-    
     except HTTPException:
-        # Re-raise HTTPExceptions as-is
         raise
     except Exception as e:
         logger.error(f"Login error: {str(e)}")

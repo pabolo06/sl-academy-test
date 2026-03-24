@@ -4,7 +4,7 @@ Loads and validates environment variables using Pydantic Settings
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import Field, validator
+from pydantic import Field
 from typing import List
 
 
@@ -24,20 +24,18 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, env="API_PORT")
     api_reload: bool = Field(default=False, env="API_RELOAD")
     
-    # CORS Configuration
+    # CORS Configuration — valor bruto separado por vírgulas, use cors_origins_list para obter a lista
     cors_origins: str = Field(
         default="http://localhost:3000,http://localhost:3001,https://sl-academy.vercel.app",
         env="CORS_ORIGINS"
     )
-    
-    @validator("cors_origins", pre=True, always=True)
-    def parse_cors_origins(cls, v):
-        """Parse comma-separated CORS origins"""
-        if not v:
+
+    @property
+    def cors_origins_list(self) -> List[str]:
+        """Retorna a lista de origens CORS parseada."""
+        if not self.cors_origins:
             return ["http://localhost:3000"]
-        if isinstance(v, list):
-            return v
-        return [origin.strip() for origin in v.split(",")]
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
     
     # Session Configuration
     session_secret_key: str = Field(default="temporary_secret_key_change_me_in_production_32_chars", env="SESSION_SECRET_KEY")
@@ -56,6 +54,16 @@ class Settings(BaseSettings):
     # Frontend URLs by domain
     doctor_frontend_url: str = Field(default="http://localhost:3000", env="DOCTOR_FRONTEND_URL")
     manager_frontend_url: str = Field(default="http://localhost:3001", env="MANAGER_FRONTEND_URL")
+
+    # Redis / Cache
+    redis_url: str = Field(default="", env="REDIS_URL")
+    cache_ttl_default: int = Field(default=300, env="CACHE_TTL_DEFAULT")
+    cache_ttl_lessons: int = Field(default=600, env="CACHE_TTL_LESSONS")
+    cache_ttl_indicators: int = Field(default=300, env="CACHE_TTL_INDICATORS")
+    cache_ttl_profile: int = Field(default=900, env="CACHE_TTL_PROFILE")
+
+    # Scoring
+    scoring_pass_threshold: float = Field(default=70.0, env="SCORING_PASS_THRESHOLD")
 
     # Logging
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
