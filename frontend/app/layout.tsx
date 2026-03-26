@@ -4,6 +4,9 @@ import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
+// Disable static prerendering for pages that use dynamic data and auth context
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "SL Academy Platform",
   description: "B2B Hospital Education and Management Platform",

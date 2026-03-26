@@ -10,7 +10,7 @@ import { Header } from './Header';
 import { ProtectedRoute } from './ProtectedRoute';
 import AIAssistantButton from './AIAssistantButton';
 import MobileDrawer from './MobileDrawer';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
 interface DashboardLayoutProps {
