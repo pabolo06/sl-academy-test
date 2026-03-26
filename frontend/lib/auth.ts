@@ -4,9 +4,7 @@
  */
 
 import { UserProfile } from '@/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
+import { API_URL } from './config';
 import { supabase, isSupabaseConfigured } from './supabase';
 
 /**

@@ -60,8 +60,8 @@ class ScoringService:
         # Ensure score is between 0 and 100
         score = max(0.0, min(100.0, score))
         
-        # Determine pass status (70% or higher)
-        passed = score >= 70.0
+        from core.config import settings
+        passed = score >= settings.scoring_pass_threshold
         
         return TestScore(
             score=round(score, 2),

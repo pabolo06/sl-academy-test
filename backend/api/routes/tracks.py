@@ -13,7 +13,6 @@ from core.database import get_db
 from core.cache import cached, invalidate_cache
 from supabase import Client
 import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -101,9 +100,7 @@ async def get_track(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"DEBUG Global Error in get_track: {str(e)}")
-        traceback.print_exc()
-        logger.error(f"Error fetching track {track_id}: {str(e)}")
+        logger.error(f"Error fetching track {track_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while fetching track: {str(e)}"

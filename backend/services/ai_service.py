@@ -172,14 +172,99 @@ Provide a clear, concise summary that captures the main question or concern."""
     def _fallback_recommendations(self, available_lessons: List[Dict]) -> List[Dict[str, str]]:
         """Fallback recommendations when AI fails"""
         recommendations = []
-        
+
         for lesson in available_lessons[:3]:
             recommendations.append({
                 "lesson_id": lesson["id"],
                 "reason": "This lesson covers related topics that may help reinforce your understanding."
             })
-        
+
         return recommendations
+
+    async def generate_assistant_response(
+        self,
+        messages: List[Dict[str, str]],
+        role: str,
+        hospital_context: Optional[str] = None
+    ) -> str:
+        """
+        Generate assistant response for chat interface with role-specific context
+
+        Args:
+            messages: List of messages with role and content [{role: "user"|"assistant", content: "..."}]
+            role: User role - "doctor" or "manager"
+            hospital_context: Optional hospital-specific information
+
+        Returns:
+            Assistant response text
+        """
+        try:
+            # System prompt based on role
+            if role == "doctor":
+                system_prompt = """You are a healthcare education assistant helping medical professionals learn and understand clinical concepts.
+
+Your role:
+- Answer questions about medical content, lessons, and clinical topics
+- Provide clear explanations of complex medical concepts
+- Help with study strategies and learning resources
+- Summarize lessons and key learning points
+- Suggest related topics for further study
+
+Guidelines:
+- Be concise but thorough in explanations
+- Use medical terminology appropriately
+- Focus on educational value
+- Encourage critical thinking
+- If uncertain about clinical content, suggest consulting official resources"""
+
+            elif role == "manager":
+                system_prompt = """You are a healthcare management assistant helping hospital managers organize teams and operations.
+
+Your role:
+- Provide insights on team performance and indicators
+- Suggest strategies for organizing medical training programs
+- Help analyze learning analytics and performance metrics
+- Recommend course content and track organization
+- Assist with management decisions related to staff education
+
+Guidelines:
+- Focus on operational efficiency
+- Use data-driven insights
+- Provide actionable recommendations
+- Consider team dynamics and goals
+- Emphasize best practices in healthcare management"""
+
+            else:
+                system_prompt = "You are a helpful assistant."
+
+            # Add hospital context if provided
+            if hospital_context:
+                system_prompt += f"\n\nCurrent context: {hospital_context}"
+
+            # Limit message history to last 10 messages to avoid token limit
+            recent_messages = messages[-10:] if len(messages) > 10 else messages
+
+            response = await self._call_with_retry(
+                self.client.chat.completions.create,
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *recent_messages
+                ],
+                temperature=0.7,
+                max_tokens=1000,
+                timeout=30.0
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except asyncio.TimeoutError:
+            logger.error("Assistant response generation timed out")
+            return "I'm taking a bit longer to respond. Please try again in a moment."
+
+        except Exception as e:
+            logger.error(f"Error generating assistant response: {str(e)}")
+            return "I encountered an error while processing your request. Please try again."
 
 
 # Global AI service instance

@@ -11,6 +11,7 @@ from utils.session import get_current_user
 from utils.rate_limiter import check_ai_request_rate_limit
 from services.ai_service import ai_service
 from core.database import get_db
+from models.ai import AssistantRequest, AssistantResponse, ChatMessage
 from supabase import Client
 import logging
 
@@ -146,4 +147,69 @@ async def generate_recommendations(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while generating recommendations"
+        )
+
+
+@router.post("/assistant", response_model=AssistantResponse)
+async def chat_with_assistant(
+    request_data: AssistantRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Chat with AI assistant (role-specific context)
+
+    - **messages**: Chat history with user messages
+    - **context**: Optional hospital/domain context
+
+    Available for: doctor and manager roles
+
+    Doctor assistant: Medical education, lessons, clinical concepts
+    Manager assistant: Team organization, performance analysis, training management
+    """
+    try:
+        # Get user role from session
+        user_role = current_user.get("role")
+
+        if user_role not in ["doctor", "manager"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only doctors and managers can use the assistant"
+            )
+
+        # Validate at least one message
+        if not request_data.messages:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one message is required"
+            )
+
+        # Convert ChatMessage objects to dicts for AI service
+        messages_dicts = [
+            {"role": msg.role, "content": msg.content}
+            for msg in request_data.messages
+        ]
+
+        # Generate response with role-specific context
+        response_text = await ai_service.generate_assistant_response(
+            messages=messages_dicts,
+            role=user_role,
+            hospital_context=request_data.context
+        )
+
+        logger.info(
+            f"Assistant response generated for {user_role} ({current_user['email']})"
+        )
+
+        return AssistantResponse(
+            response=response_text,
+            role=user_role
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in assistant endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while processing your request"
         )

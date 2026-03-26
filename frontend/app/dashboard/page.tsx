@@ -1,11 +1,43 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+
+interface ProgressData {
+  completed: number;
+  total: number;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [progress, setProgress] = useState<ProgressData | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const fetchProgress = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const [lessonsRes, attemptsRes] = await Promise.all([
+        supabase.from('lessons').select('id', { count: 'exact' }).is('deleted_at', null),
+        supabase.from('test_attempts').select('lesson_id').eq('user_id', session.user.id).eq('type', 'post'),
+      ]);
+
+      const total = lessonsRes.count ?? 0;
+      const completedIds = new Set((attemptsRes.data || []).map((a: any) => a.lesson_id));
+      setProgress({ completed: completedIds.size, total });
+    };
+
+    fetchProgress();
+  }, []);
+
+  const pct = progress && progress.total > 0
+    ? Math.round((progress.completed / progress.total) * 100)
+    : null;
 
   return (
     <DashboardLayout>
@@ -66,8 +98,27 @@ export default function DashboardPage() {
               </div>
               <span className="text-sm font-medium text-slate-300">Progresso</span>
             </div>
-            <p className="text-sm text-slate-400">Continue aprendendo</p>
-            <p className="text-xs text-slate-500 mt-1">Explore as trilhas disponíveis</p>
+            {pct !== null ? (
+              <>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <p className="text-lg font-bold text-white tabular-nums">{pct}%</p>
+                  <p className="text-xs text-slate-500">{progress!.completed}/{progress!.total} aulas</p>
+                </div>
+                <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-slate-400">Carregando...</p>
+                <div className="w-full h-1.5 bg-white/[0.06] rounded-full mt-1.5">
+                  <div className="h-full w-0 bg-amber-400 rounded-full" />
+                </div>
+              </>
+            )}
           </div>
         </div>
 

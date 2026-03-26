@@ -181,7 +181,7 @@ async def check_indicator_import_rate_limit(request: Request):
 async def check_ai_request_rate_limit(request: Request):
     """Rate limit dependency for AI requests"""
     from utils.session import session_manager
-    
+
     # Use user ID as identifier
     session = session_manager.get_session(request)
     if not session:
@@ -189,19 +189,48 @@ async def check_ai_request_rate_limit(request: Request):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated"
         )
-    
+
     identifier = f"ai_request:{session['user_id']}"
-    
+
     # 5 requests per hour
     is_allowed, retry_after = await rate_limiter.check_rate_limit(
         identifier=identifier,
         max_requests=5,
         window_seconds=60 * 60
     )
-    
+
     if not is_allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many AI requests. Please try again later.",
+            headers={"Retry-After": str(retry_after)}
+        )
+
+
+async def check_chat_rate_limit(request: Request):
+    """Rate limit dependency for chat/assistant endpoint - more permissive than generic AI"""
+    from utils.session import session_manager
+
+    # Use user ID as identifier
+    session = session_manager.get_session(request)
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+
+    identifier = f"chat_request:{session['user_id']}"
+
+    # 30 requests per hour for chat conversations
+    is_allowed, retry_after = await rate_limiter.check_rate_limit(
+        identifier=identifier,
+        max_requests=30,
+        window_seconds=60 * 60
+    )
+
+    if not is_allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Limite de mensagens atingido. Tente novamente mais tarde.",
             headers={"Retry-After": str(retry_after)}
         )

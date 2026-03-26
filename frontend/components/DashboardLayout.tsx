@@ -8,6 +8,7 @@
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ProtectedRoute } from './ProtectedRoute';
+import AIAssistantButton from './AIAssistantButton';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
           </main>
         </div>
       </div>
+      <AIAssistantButton />
     </ProtectedRoute>
   );
 }

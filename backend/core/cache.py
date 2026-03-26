@@ -5,7 +5,6 @@ Provides caching decorators and utilities for performance optimization
 
 import redis
 import json
-import os
 import hashlib
 from typing import Optional, Any, Callable
 from functools import wraps
@@ -13,9 +12,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Redis connection (Disabled for debugging / Redis offline)
-redis_client = None
-logger.warning("Redis caching is manually disabled to prevent startup hangs.")
+
+def _connect_redis():
+    """Tenta conectar ao Redis; retorna None silenciosamente se não disponível."""
+    try:
+        from core.config import settings
+        if not settings.redis_url:
+            return None
+        client = redis.from_url(settings.redis_url, socket_connect_timeout=2, socket_timeout=2)
+        client.ping()
+        logger.info("Redis conectado com sucesso.")
+        return client
+    except Exception as e:
+        logger.warning(f"Redis indisponível, cache desabilitado: {e}")
+        return None
+
+
+redis_client = _connect_redis()
 
 
 def cache_key(*args, **kwargs) -> str:
@@ -40,8 +53,7 @@ def cached(ttl: int = 300, prefix: str = ''):
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            # Skip caching during debugging or if Redis is not available
-            if True or redis_client is None:
+            if redis_client is None:
                 return await func(*args, **kwargs)
             
             try:
