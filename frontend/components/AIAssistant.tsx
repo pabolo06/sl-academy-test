@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X, Loader2 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { aiApi } from '@/lib/api';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -44,14 +44,14 @@ export default function AIAssistant({ onClose, context }: AIAssistantProps) {
 
     try {
       // Call backend assistant endpoint
-      const response = await api.post('/api/assistant', {
+      const response = await aiApi.sendMessage({
         messages: [...messages, userMessage],
         context: context,
       });
 
       const assistantMessage: Message = {
         role: 'assistant',
-        content: response.data.response,
+        content: response.response,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);

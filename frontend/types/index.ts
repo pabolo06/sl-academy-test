@@ -150,6 +150,23 @@ export interface IndicatorImportResult {
   errors: IndicatorImportError[];
 }
 
+// AI Chat Types
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface AssistantRequest {
+  messages: ChatMessage[];
+  context?: string;
+}
+
+export interface AssistantResponse {
+  response: string;
+  role: string;
+  timestamp: string;
+}
+
 // AI Recommendation Types
 export interface RecommendationRequest {
   lesson_id: string;

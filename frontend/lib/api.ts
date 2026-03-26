@@ -3,7 +3,7 @@
  * Centralized API calls with error handling
  */
 
-import { Track, Lesson, LessonDetail, Question, TestAttemptCreate, TestAttempt, Doubt, DoubtCreate, Indicator, RecommendationRequest, RecommendationResponse } from '@/types';
+import { Track, Lesson, LessonDetail, Question, TestAttemptCreate, TestAttempt, Doubt, DoubtCreate, Indicator, RecommendationRequest, RecommendationResponse, AssistantRequest, AssistantResponse } from '@/types';
 import { API_URL } from './config';
 
 class ApiError extends Error {
@@ -266,6 +266,11 @@ export const indicatorApi = {
 export const aiApi = {
   getRecommendations: (data: RecommendationRequest) =>
     fetchApi<RecommendationResponse>('/api/generate-recommendations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  sendMessage: (data: AssistantRequest) =>
+    fetchApi<AssistantResponse>('/api/assistant', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
