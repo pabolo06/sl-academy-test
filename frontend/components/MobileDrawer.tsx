@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface DrawerItem {
   icon: React.ReactNode;
@@ -24,13 +25,12 @@ export default function MobileDrawer({
   isAuthenticated = false,
 }: MobileDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   // Close drawer on route change
   useEffect(() => {
-    const handleClose = () => setIsOpen(false);
-    window.addEventListener('navigationend', handleClose);
-    return () => window.removeEventListener('navigationend', handleClose);
-  }, []);
+    setIsOpen(false);
+  }, [pathname]);
 
   // Handle swipe gestures
   const [touchStart, setTouchStart] = useState(0);
