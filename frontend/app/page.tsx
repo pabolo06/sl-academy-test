@@ -1,9 +1,48 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Stethoscope, BarChart3, MessageSquare } from 'lucide-react';
+import { ChevronRight, Stethoscope, BarChart3, MessageSquare, Info, HelpCircle, Shield, Mail } from 'lucide-react';
+import MobileDrawer from '@/components/MobileDrawer';
 
 export default function Home() {
+  const drawerItems = [
+    {
+      icon: '🏥',
+      label: 'Sobre SL Academy',
+      href: '#about',
+    },
+    {
+      icon: '📚',
+      label: 'Como Funciona',
+      href: '#features',
+    },
+    {
+      icon: '🔐',
+      label: 'Segurança de Dados',
+      href: '#security',
+    },
+    {
+      icon: '📞',
+      label: 'Suporte',
+      href: '#support',
+    },
+    {
+      icon: '',
+      label: '',
+      divider: true,
+    },
+    {
+      icon: '⚖️',
+      label: 'Termos',
+      href: '/terms',
+    },
+    {
+      icon: '🔒',
+      label: 'Privacidade',
+      href: '/privacy',
+    },
+  ];
+
   const features = [
     {
       icon: <Stethoscope size={28} />,
@@ -30,6 +69,9 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen flex-col bg-[#0a0e1a] overflow-hidden">
+      {/* Mobile Drawer */}
+      <MobileDrawer items={drawerItems} title="SL Academy" />
+
       {/* Animated Background Gradient */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-r from-blue-500/20 to-transparent rounded-full blur-3xl animate-pulse" />
