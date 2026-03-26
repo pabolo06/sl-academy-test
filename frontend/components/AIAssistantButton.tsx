@@ -9,10 +9,10 @@ export default function AIAssistantButton() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - responsive size */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg transition-all duration-300 z-40 flex items-center justify-center ${
+        className={`fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12 sm:h-14 rounded-full shadow-lg transition-all duration-300 z-40 flex items-center justify-center ${
           isOpen
             ? 'bg-blue-600 hover:bg-blue-700 scale-110'
             : 'bg-blue-600 hover:bg-blue-700 scale-100'
@@ -20,12 +20,13 @@ export default function AIAssistantButton() {
         aria-label="Open AI Assistant"
         title="AI Assistant"
       >
-        <MessageCircle size={24} className="text-white" />
+        <MessageCircle size={20} className="sm:hidden text-white" />
+        <MessageCircle size={24} className="hidden sm:block text-white" />
       </button>
 
-      {/* Chat Modal */}
+      {/* Chat Modal - responsive */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-screen-sm max-h-[600px] rounded-lg shadow-2xl z-40 bg-[#0a0e1a] border border-blue-500/20">
+        <div className="fixed inset-0 bottom-auto top-16 sm:top-auto sm:bottom-24 right-4 sm:right-6 left-4 sm:left-auto sm:w-96 max-h-[calc(100vh-100px)] sm:max-h-[600px] rounded-lg shadow-2xl z-40 bg-[#0a0e1a] border border-blue-500/20 flex flex-col">
           <AIAssistant onClose={() => setIsOpen(false)} />
         </div>
       )}

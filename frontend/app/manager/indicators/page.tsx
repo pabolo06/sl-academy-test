@@ -69,14 +69,14 @@ export default function IndicatorsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {[
             { label: 'Total', value: indicators.length },
             { label: 'Categorias', value: categories.length },
             { label: 'Filtrados', value: filteredIndicators.length },
           ].map(({ label, value }) => (
             <div key={label} className="card p-4 text-center">
-              <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
+              <p className="text-xl sm:text-2xl font-bold text-white tabular-nums">{value}</p>
               <p className="text-xs text-slate-400 mt-0.5">{label}</p>
             </div>
           ))}
@@ -84,7 +84,7 @@ export default function IndicatorsPage() {
 
         {/* Filters */}
         <div className="card p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
             <div>
               <label htmlFor="category-filter" className="form-label">Categoria</label>
               <select

@@ -64,15 +64,24 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   return (
     <ProtectedRoute requiredRole={requiredRole}>
       <div className="flex min-h-screen bg-[#0a0e1a]">
-        <Sidebar />
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <div className="hidden md:flex md:flex-shrink-0">
+          <Sidebar />
+        </div>
+
+        {/* Main content */}
         <div className="flex-1 flex flex-col">
           <Header />
-          <main className="flex-1 p-6">
+          <main className="flex-1 overflow-auto p-4 sm:p-6">
             {children}
           </main>
         </div>
       </div>
+
+      {/* AI Assistant Button */}
       <AIAssistantButton />
+
+      {/* Mobile Navigation Drawer */}
       <MobileDrawer
         items={drawerItems}
         title={user?.role === 'doctor' ? 'Médico' : 'Gestor'}

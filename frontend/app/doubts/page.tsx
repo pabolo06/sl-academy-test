@@ -88,14 +88,14 @@ export default function DoubtsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {[
             { label: 'Total', value: doubts.length, color: 'text-white' },
             { label: 'Pendentes', value: pendingCount, color: 'text-amber-400' },
             { label: 'Respondidas', value: answeredCount, color: 'text-emerald-400' },
           ].map(({ label, value, color }) => (
             <div key={label} className="card p-4 text-center">
-              <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
+              <p className={`text-xl sm:text-2xl font-bold tabular-nums ${color}`}>{value}</p>
               <p className="text-xs text-slate-400 mt-0.5">{label}</p>
             </div>
           ))}

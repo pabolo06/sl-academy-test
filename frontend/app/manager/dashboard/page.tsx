@@ -162,7 +162,7 @@ export default function ManagerDashboardPage() {
         ) : (
           <>
             {/* KPI cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {statCards.map(({ key, label, color, icon }) => (
                 <div key={key} className="card p-5">
                   <div className={`w-10 h-10 rounded-lg border flex items-center justify-center mb-3 ${colorMap[color]}`}>
