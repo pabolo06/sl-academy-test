@@ -17,8 +17,8 @@ async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const url = `${API_URL}${endpoint}`;
   try {
-    const url = `${API_URL}${endpoint}`;
     const authHeaders = await getAuthHeaders();
     const response = await fetch(url, {
       ...options,
@@ -41,7 +41,9 @@ async function fetchApi<T>(
     return response.json();
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, error.message || 'Request failed');
+    const message = error.message || 'Request failed';
+    console.error(`API Error at ${url}:`, message);
+    throw new ApiError(500, message);
   }
 }
 
