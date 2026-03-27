@@ -27,9 +27,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Copiar entrypoint script
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
 # Comando para rodar a aplicação
-ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
+# Usar exec form do CMD para que signals funcionem corretamente
+CMD exec python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
