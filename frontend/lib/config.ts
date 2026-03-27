@@ -8,5 +8,5 @@ export const API_URL =
   (typeof window !== 'undefined'
     ? window.location.hostname === 'localhost'
       ? 'http://localhost:8000'
-      : 'https://sl-academy-backend.railway.app'
+      : 'https://web-production-e40b7.up.railway.app'
     : 'http://localhost:8000');
