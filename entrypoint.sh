@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Starting FastAPI application..."
-echo "Port: ${PORT:-8000}"
+PORT=${PORT:-8000}
+echo "Starting FastAPI application on port $PORT..."
 
-python -m uvicorn main:app \
-  --host 0.0.0.0 \
-  --port ${PORT:-8000}
+exec python -m uvicorn main:app --host 0.0.0.0 --port "$PORT"
