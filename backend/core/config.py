@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     
     # Environment
     environment: str = Field(default="development", env="ENVIRONMENT")
-    debug: bool = Field(default=True, env="DEBUG")
+    debug: bool = Field(default=False, env="DEBUG")  # Default to False in production
     
     # Frontend URLs by domain
     doctor_frontend_url: str = Field(default="http://localhost:3000", env="DOCTOR_FRONTEND_URL")
