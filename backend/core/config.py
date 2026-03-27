@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     
     # Supabase Configuration (Obrigatórios em produção, mas com defaults para evitar crash no build)
     supabase_url: str = Field(default="https://placeholder.supabase.co", env="SUPABASE_URL")
-    supabase_anon_key: str = Field(default="placeholder", env="SUPABASE_ANON_KEY")
+    supabase_anon_key: str = Field(default="placeholder", env="SUPABASE_KEY")
     supabase_service_key: str = Field(default="placeholder", env="SUPABASE_SERVICE_KEY")
     
     # Database
