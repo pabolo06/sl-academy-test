@@ -1,9 +1,10 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Instalar dependências de sistema
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -17,7 +18,14 @@ COPY backend/ ./backend/
 
 # Variáveis de ambiente padrão
 ENV PYTHONPATH=/app
-ENV PORT=7860
+ENV PORT=8000
 
-# Comando para rodar a aplicação
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}"]
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Comando para rodar a aplicação com gunicorn
+CMD ["sh", "-c", "cd backend && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:${PORT}"]
