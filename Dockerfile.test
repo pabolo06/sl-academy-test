@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy just requirements and install
+COPY backend/requirements.txt .
+RUN pip install fastapi uvicorn --no-cache-dir
+
+# Create minimal app
+RUN cat > main.py << 'EOF'
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI()
+
+@app.get("/health")
+async def health():
+    logger.info("Health check received")
+    return JSONResponse({"status": "ok"})
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+EOF
+
+ENV PYTHONPATH=/app
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

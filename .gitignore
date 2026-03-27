@@ -150,3 +150,6 @@ secrets/
 .parcel-cache/
 .turbo/
 
+
+# Deploy keys
+.appdeploy_key.json

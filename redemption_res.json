@@ -1,1 +1,0 @@
-{"result":{"content":[{"type":"text","text":"MCP error -32602: Input validation error: Invalid arguments for tool deploy_app: [\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"intent\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]"}],"isError":true},"jsonrpc":"2.0","id":1}
