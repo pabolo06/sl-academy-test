@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build --prefix frontend && echo 'Frontend built'",
+  "outputDirectory": "frontend/.next",
+  "serverless": {
+    "python": "3.9"
+  }
+}
