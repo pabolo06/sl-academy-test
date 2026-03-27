@@ -55,6 +55,14 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
 
+# Startup event
+@app.on_event("startup")
+async def startup():
+    """Log startup completion"""
+    logger.info(f"FastAPI application started. Environment: {settings.environment}, Debug: {settings.debug}")
+    logger.info(f"CORS origins configured: {settings.cors_origins_list}")
+
+
 # Security headers middleware
 @app.middleware("http")
 async def add_security_headers(request, call_next):
@@ -72,13 +80,21 @@ async def add_security_headers(request, call_next):
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return JSONResponse(
-        content={
-            "status": "healthy",
-            "environment": settings.environment,
-            "version": "1.0.0"
-        }
-    )
+    try:
+        logger.info(f"Health check requested - Environment: {settings.environment}")
+        return JSONResponse(
+            content={
+                "status": "healthy",
+                "environment": settings.environment,
+                "version": "1.0.0"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Health check failed: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": str(e)}
+        )
 
 
 # Root endpoint
