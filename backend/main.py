@@ -36,8 +36,8 @@ app = FastAPI(
     debug=settings.debug
 )
 
-# Add session validation middleware
-app.add_middleware(SessionValidationMiddleware)
+# Add session validation middleware - DISABLED FOR DEBUGGING
+# app.add_middleware(SessionValidationMiddleware)
 
 # Configure CORS (Must be the outermost layer to handle CORS on 401/error responses)
 app.add_middleware(
