@@ -110,6 +110,14 @@ async def root():
     )
 
 
+# Simple ping endpoint - no dependencies, just for testing
+@app.get("/ping")
+async def ping():
+    """Simple ping endpoint for connectivity testing"""
+    logger.info("Ping endpoint called")
+    return JSONResponse(content={"pong": True})
+
+
 # Import routers
 from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule
 
