@@ -12,6 +12,9 @@ from fastapi.responses import JSONResponse
 from core.config import settings
 import logging
 
+# NOTE: SessionValidationMiddleware temporarily disabled for debugging
+# from middleware.auth import SessionValidationMiddleware
+
 logging.basicConfig(
     level=getattr(logging, settings.log_level),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
