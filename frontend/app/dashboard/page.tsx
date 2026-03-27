@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { scheduleApi } from '@/lib/api';
+import { ScheduleSlot } from '@/types';
 
 interface ProgressData {
   completed: number;
@@ -14,6 +16,19 @@ interface ProgressData {
 export default function DashboardPage() {
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressData | null>(null);
+  const [shifts, setShifts] = useState<ScheduleSlot[]>([]);
+  const [shiftsLoading, setShiftsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'doctor') {
+      setShiftsLoading(true);
+      scheduleApi
+        .getMyShifts()
+        .then(setShifts)
+        .catch((err) => console.error('Erro ao carregar plantões:', err))
+        .finally(() => setShiftsLoading(false));
+    }
+  }, [user?.role]);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -163,6 +178,58 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Doctor Shifts */}
+        {user?.role === 'doctor' && (
+          <div className="card p-5">
+            <h3 className="section-title mb-4">Seus Plantões Esta Semana</h3>
+            {shiftsLoading ? (
+              <p className="text-slate-400 text-sm">Carregando...</p>
+            ) : shifts.length > 0 ? (
+              <div className="space-y-3">
+                {shifts.map((shift) => {
+                  const shiftColors: Record<string, string> = {
+                    morning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                    afternoon: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                    night: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                  };
+
+                  const shiftLabels: Record<string, string> = {
+                    morning: 'Manhã',
+                    afternoon: 'Tarde',
+                    night: 'Noite',
+                  };
+
+                  const date = new Date(shift.slot_date);
+                  const formattedDate = date.toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: '2-digit',
+                  });
+
+                  return (
+                    <div
+                      key={shift.id}
+                      className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/[0.06] rounded-lg hover:bg-white/[0.04] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${shiftColors[shift.shift]}`}>
+                          {shiftLabels[shift.shift]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-200 capitalize">{formattedDate}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500">{shift.slot_date}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-slate-400 text-sm">Nenhum plantão agendado para esta semana.</p>
+            )}
+          </div>
+        )}
 
         {/* Tips */}
         <div className="card p-5">

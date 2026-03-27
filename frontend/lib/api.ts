@@ -3,7 +3,7 @@
  * Centralized API calls with error handling
  */
 
-import { Track, Lesson, LessonDetail, Question, TestAttemptCreate, TestAttempt, Doubt, DoubtCreate, Indicator, RecommendationRequest, RecommendationResponse, AssistantRequest, AssistantResponse } from '@/types';
+import { Track, Lesson, LessonDetail, Question, TestAttemptCreate, TestAttempt, Doubt, DoubtCreate, Indicator, RecommendationRequest, RecommendationResponse, AssistantRequest, AssistantResponse, Schedule, ScheduleSlotCreate, ScheduleSlot } from '@/types';
 import { API_URL } from './config';
 
 class ApiError extends Error {
@@ -235,6 +235,31 @@ export const doubtApi = {
     method: 'PATCH',
     body: JSON.stringify({ answer }),
   }),
+};
+
+// Schedule API
+export const scheduleApi = {
+  getSchedule: (weekStart: string) =>
+    fetchApi<Schedule>(`/api/schedule?week_start=${weekStart}`),
+
+  addSlot: (scheduleId: string, slot: ScheduleSlotCreate) =>
+    fetchApi<ScheduleSlot>(`/api/schedule/${scheduleId}/slots`, {
+      method: 'POST',
+      body: JSON.stringify(slot),
+    }),
+
+  removeSlot: (slotId: string) =>
+    fetchApi<void>(`/api/schedule/slots/${slotId}`, {
+      method: 'DELETE',
+    }),
+
+  publishSchedule: (scheduleId: string) =>
+    fetchApi<Schedule>(`/api/schedule/${scheduleId}/publish`, {
+      method: 'PATCH',
+    }),
+
+  getMyShifts: () =>
+    fetchApi<ScheduleSlot[]>('/api/schedule/my-shifts'),
 };
 
 // Indicator API

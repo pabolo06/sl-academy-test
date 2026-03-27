@@ -95,7 +95,7 @@ async def root():
 
 
 # Import routers
-from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube
+from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
@@ -109,6 +109,7 @@ app.include_router(ai.router, prefix="/api", tags=["AI"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
+app.include_router(schedule.router, tags=["Schedule"])
 
 
 if __name__ == "__main__":

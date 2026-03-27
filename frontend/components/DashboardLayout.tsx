@@ -43,6 +43,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     { icon: '👤', label: 'Meu Perfil', href: '/profile' },
     { icon: '📊', label: 'Dashboard', href: '/manager/dashboard' },
     { icon: '👥', label: 'Minha Equipe', href: '/manager/team' },
+    { icon: '📅', label: 'Escala de Plantões', href: '/manager/schedule' },
     { icon: '📈', label: 'Indicadores', href: '/manager/indicators' },
     { icon: '⚙️', label: 'Configurações', href: '/settings' },
     { icon: '', label: '', divider: true },

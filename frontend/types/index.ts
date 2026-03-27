@@ -59,6 +59,39 @@ export interface LessonDetail extends Lesson {
   post_test_questions_count?: number;
 }
 
+// Schedule and Shift Types
+export type ShiftType = 'morning' | 'afternoon' | 'night';
+export type ScheduleStatus = 'draft' | 'published';
+
+export interface ScheduleSlot {
+  id: string;
+  schedule_id: string;
+  doctor_id: string;
+  doctor_email: string;
+  slot_date: string; // YYYY-MM-DD
+  shift: ShiftType;
+  notes?: string;
+  created_at: string;
+}
+
+export interface Schedule {
+  id: string;
+  hospital_id: string;
+  week_start: string; // YYYY-MM-DD (Monday)
+  status: ScheduleStatus;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  schedule_slots?: ScheduleSlot[];
+}
+
+export interface ScheduleSlotCreate {
+  doctor_id: string;
+  slot_date: string; // YYYY-MM-DD
+  shift: ShiftType;
+  notes?: string;
+}
+
 // Question and Test Types
 export type QuestionType = 'pre' | 'post';
 

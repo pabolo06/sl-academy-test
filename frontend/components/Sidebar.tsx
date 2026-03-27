@@ -53,12 +53,19 @@ const IconDashboard = () => (
   </svg>
 );
 
+const IconCalendar = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+  </svg>
+);
+
 const menuItems: MenuItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid /> },
   { label: 'Trilhas', href: '/tracks', icon: <IconBook /> },
   { label: 'Minhas Dúvidas', href: '/doubts', icon: <IconHelpCircle />, roles: ['doctor'] },
   { label: 'Gerenciar Dúvidas', href: '/manager/doubts', icon: <IconMessage />, roles: ['manager'] },
   { label: 'Gerenciar Trilhas', href: '/manager/tracks', icon: <IconSettings />, roles: ['manager'] },
+  { label: 'Escala de Plantões', href: '/manager/schedule', icon: <IconCalendar />, roles: ['manager'] },
   { label: 'Indicadores', href: '/manager/indicators', icon: <IconBarChart />, roles: ['manager'] },
   { label: 'Dashboard Gerencial', href: '/manager/dashboard', icon: <IconDashboard />, roles: ['manager'] },
 ];
