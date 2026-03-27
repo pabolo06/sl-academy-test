@@ -118,22 +118,22 @@ async def ping():
     return JSONResponse(content={"pong": True})
 
 
-# Import routers
-from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule
+# Import routers - DISABLED FOR DEBUGGING
+# from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule
 
-# Include routers
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(tracks.router, prefix="/api/tracks", tags=["Tracks"])
-app.include_router(lessons.router, prefix="/api/lessons", tags=["Lessons"])
-app.include_router(questions.router, prefix="/api", tags=["Questions"])
-app.include_router(test_attempts.router, prefix="/api/test-attempts", tags=["Test Attempts"])
-app.include_router(doubts.router, prefix="/api/doubts", tags=["Doubts"])
-app.include_router(indicators.router, prefix="/api/indicators", tags=["Indicators"])
-app.include_router(ai.router, prefix="/api", tags=["AI"])
-app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
-app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
-app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
-app.include_router(schedule.router, tags=["Schedule"])
+# Include routers - DISABLED FOR DEBUGGING
+# app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+# app.include_router(tracks.router, prefix="/api/tracks", tags=["Tracks"])
+# app.include_router(lessons.router, prefix="/api/lessons", tags=["Lessons"])
+# app.include_router(questions.router, prefix="/api", tags=["Questions"])
+# app.include_router(test_attempts.router, prefix="/api/test-attempts", tags=["Test Attempts"])
+# app.include_router(doubts.router, prefix="/api/doubts", tags=["Doubts"])
+# app.include_router(indicators.router, prefix="/api/indicators", tags=["Indicators"])
+# app.include_router(ai.router, prefix="/api", tags=["AI"])
+# app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
+# app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+# app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
+# app.include_router(schedule.router, tags=["Schedule"])
 
 
 if __name__ == "__main__":
