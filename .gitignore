@@ -3,12 +3,25 @@
 # ============================================================================
 # CRITICAL: Environment Variables - NEVER commit these files!
 # ============================================================================
-# Only .env.example, .env.development, .env.staging, .env.production should be committed
+# Only .env.example should be committed — all others contain credentials
 .env
 .env.local
 .env.*.local
+
+# Backend environment files (keep only .env.example)
 backend/.env
+backend/.env.development
+backend/.env.staging
+backend/.env.production
+backend/.env.test
+
+# Frontend environment files (keep only .env.example)
+frontend/.env
 frontend/.env.local
+frontend/.env.development
+frontend/.env.staging
+frontend/.env.production
+frontend/.env.test
 
 # ============================================================================
 # Python

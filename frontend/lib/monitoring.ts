@@ -9,7 +9,7 @@
  * Initialize monitoring.
  */
 export function initSentry() {
-  console.log('Monitoring initialized (Stub).');
+  // Monitoring stub — no-op until Sentry is re-enabled
 }
 
 /**

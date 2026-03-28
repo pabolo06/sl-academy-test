@@ -16,11 +16,10 @@ export function usePWA() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then((registration) => {
-          console.log('Service Worker registered:', registration);
-        })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Service Worker registration failed:', error);
+          }
         });
     }
 
@@ -35,7 +34,6 @@ export function usePWA() {
 
     // Listen for app installed
     window.addEventListener('appinstalled', () => {
-      console.log('PWA installed');
       setIsInstallable(false);
       setDeferredPrompt(null);
     });

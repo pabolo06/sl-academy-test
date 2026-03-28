@@ -6,9 +6,9 @@ backend_dir = os.path.dirname(os.path.abspath(__file__))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from core.config import settings
 from middleware.auth import SessionValidationMiddleware
@@ -28,22 +28,41 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         if settings.environment == "production":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
         return response
 
+
+class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
+    """Force HTTPS in production. Redirects HTTP requests to HTTPS."""
+    async def dispatch(self, request: Request, call_next):
+        if settings.environment == "production" and request.headers.get("x-forwarded-proto") == "http":
+            https_url = str(request.url).replace("http://", "https://", 1)
+            return RedirectResponse(url=https_url, status_code=301)
+        return await call_next(request)
+
+
+# Ensure debug is always False in production regardless of env config
+_debug_mode = settings.debug and settings.environment != "production"
 
 # Create app
 app = FastAPI(
     title="SL Academy Platform API",
     version="1.0.0",
-    debug=settings.debug
+    debug=_debug_mode,
+    # Disable OpenAPI docs in production
+    docs_url=None if settings.environment == "production" else "/docs",
+    redoc_url=None if settings.environment == "production" else "/redoc",
+    openapi_url=None if settings.environment == "production" else "/openapi.json",
 )
 
 # Middleware stack (innermost first, outermost last)
-# Execution order on request: CORS → SecurityHeaders → SessionValidation → App
+# Execution order on request: CORS → HTTPSRedirect → SecurityHeaders → SessionValidation → App
 app.add_middleware(SessionValidationMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,

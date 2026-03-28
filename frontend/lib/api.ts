@@ -42,7 +42,9 @@ async function fetchApi<T>(
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     const message = error.message || 'Request failed';
-    console.error(`API Error at ${url}:`, message);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`API Error at ${url}:`, message);
+    }
     throw new ApiError(500, message);
   }
 }
@@ -58,7 +60,9 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
       }
     }
   } catch (e) {
-    console.warn('Falha ao obter headers de autenticação:', e);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Falha ao obter headers de autenticação:', e);
+    }
   }
   return {};
 }
