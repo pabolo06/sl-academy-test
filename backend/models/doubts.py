@@ -8,6 +8,7 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 from enum import Enum
+import bleach
 
 
 class DoubtStatus(str, Enum):

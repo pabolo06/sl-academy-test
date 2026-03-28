@@ -39,7 +39,11 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         """Process request and validate session if needed"""
-        
+
+        # Pass OPTIONS (CORS preflight) without auth check
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # Check if route is public
         if self._is_public_route(request.url.path):
             return await call_next(request)

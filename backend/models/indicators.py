@@ -45,13 +45,13 @@ class IndicatorImportRow(BaseModel):
 
 class IndicatorImportRequest(BaseModel):
     """Indicator import request"""
-    indicators: List[IndicatorImportRow] = Field(..., max_items=10000)
-    
+    indicators: List[IndicatorImportRow] = Field(..., max_items=1000)
+
     @validator("indicators")
     def validate_row_limit(cls, v):
         """Validate row limit"""
-        if len(v) > 10000:
-            raise ValueError("Maximum 10,000 rows allowed per import")
+        if len(v) > 1000:
+            raise ValueError("Maximum 1,000 rows allowed per import")
         return v
 
 

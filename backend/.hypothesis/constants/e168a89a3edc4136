@@ -1,4 +1,0 @@
-# file: C:\Users\pablo\OneDrive\Documentos\Oslo\backend\utils\audit_logger.py
-# hypothesis_version: 6.151.9
-
-['ACCOUNT_DELETION', 'AUTHZ_FORBIDDEN', 'AUTH_LOGIN_FAILURE', 'AUTH_LOGIN_SUCCESS', 'AUTH_LOGOUT', 'FILE_UPLOAD', 'File - Upload', 'INDICATOR_IMPORT', 'Indicator - Import', 'RLS_VIOLATION', 'Unknown Event', 'action', 'audit_logs', 'deletion_timestamp', 'details', 'doubts_anonymized', 'doubts_deleted', 'email', 'error_count', 'event_description', 'event_type', 'file_size', 'file_type', 'filename', 'hospital_id', 'ip_address', 'reason', 'resource', 'role', 'success_count', 'timestamp', 'unknown', 'user_agent', 'user_id']

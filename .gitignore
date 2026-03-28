@@ -153,3 +153,22 @@ secrets/
 
 # Deploy keys
 .appdeploy_key.json
+
+# Frontend build outputs
+frontend/out/
+frontend/.next/
+frontend/.swc/
+frontend/coverage/
+frontend/screenshots/
+frontend/playwright-report/
+frontend/test-results/
+frontend/tsconfig.tsbuildinfo
+frontend/*.log
+frontend/build_*.txt
+
+# Backend artifacts
+backend/.coverage
+backend/.hypothesis/
+backend/venv/
+backend/*.log
+backend/test_results*.log

@@ -9,8 +9,9 @@ from typing import Optional
 import json
 import base64
 from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
 from core.config import settings
-import hashlib
 
 
 class SessionManager:
@@ -20,9 +21,15 @@ class SessionManager:
     SESSION_MAX_AGE = 24 * 60 * 60  # 24 hours in seconds
     
     def __init__(self):
-        # Create Fernet key from session secret
-        key = hashlib.sha256(settings.session_secret_key.encode()).digest()
-        self.cipher = Fernet(base64.urlsafe_b64encode(key))
+        # Derive Fernet key using PBKDF2 (100k iterations, fixed salt for determinism)
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=b"sl_academy_session_kdf_v1",
+            iterations=100000,
+        )
+        raw_key = kdf.derive(settings.session_secret_key.encode())
+        self.cipher = Fernet(base64.urlsafe_b64encode(raw_key))
     
     def create_session(
         self,

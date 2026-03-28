@@ -9,17 +9,29 @@ if backend_dir not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from core.config import settings
+from middleware.auth import SessionValidationMiddleware
 import logging
-
-# NOTE: SessionValidationMiddleware temporarily disabled for debugging
-# from middleware.auth import SessionValidationMiddleware
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Adds standard security headers to every response."""
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        if settings.environment == "production":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
 
 # Create app
 app = FastAPI(
@@ -28,7 +40,10 @@ app = FastAPI(
     debug=settings.debug
 )
 
-# CORS middleware
+# Middleware stack (innermost first, outermost last)
+# Execution order on request: CORS → SecurityHeaders → SessionValidation → App
+app.add_middleware(SessionValidationMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,

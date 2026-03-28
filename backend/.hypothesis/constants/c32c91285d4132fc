@@ -1,4 +1,0 @@
-# file: C:\Users\pablo\OneDrive\Documentos\Oslo\backend\api\routes\auth.py
-# hypothesis_version: 6.151.9
-
-['/login', '/login/gestor', '/login/medico', '/logout', '/me', '/me/export', 'Invalid credentials', 'Login successful', 'Logout successful', 'ai_summary', 'answer', 'answered_by', 'answers', 'completed_at', 'consent_timestamp', 'created_at', 'deleted', 'deleted_at', 'doctor', 'doubts', 'doubts_anonymized', 'email', 'full_name', 'hospital_id', 'hospital_name', 'hospitals', 'id', 'image_url', 'inferred_watch_date', 'is_focal_point', 'lesson_id', 'lesson_title', 'lessons', 'manager', 'message', 'name', 'null', 'password', 'post', 'post_test_completed', 'pre', 'pre_test_completed', 'profile_id', 'profiles', 'role', 'score', 'started_at', 'status', 'success', 'test_attempts', 'text', 'title', 'track_title', 'tracks', 'type', 'unknown', 'user', 'user-agent', 'user_id', 'video_watched']

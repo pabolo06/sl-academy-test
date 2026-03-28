@@ -1,4 +1,0 @@
-# file: C:\Users\pablo\OneDrive\Documentos\Oslo\backend\core\config.py
-# hypothesis_version: 6.151.9
-
-[8000, ',', '.env', '0.0.0.0', 'AI_MODEL', 'API_HOST', 'API_PORT', 'API_RELOAD', 'CORS_ORIGINS', 'DATABASE_URL', 'DEBUG', 'DOCTOR_FRONTEND_URL', 'ENVIRONMENT', 'INFO', 'LOG_LEVEL', 'MANAGER_FRONTEND_URL', 'OPENAI_API_KEY', 'RATE_LIMIT_ENABLED', 'SESSION_SECRET_KEY', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_KEY', 'SUPABASE_URL', 'cors_origins', 'development', 'gpt-4-turbo-preview']
