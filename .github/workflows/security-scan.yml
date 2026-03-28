@@ -14,11 +14,11 @@ jobs:
   dependency-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Run Snyk for backend
         uses: snyk/actions/python@master
         continue-on-error: true
@@ -26,7 +26,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --file=backend/requirements.txt --severity-threshold=high
-      
+
       - name: Run Snyk for frontend
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -34,7 +34,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --file=frontend/package.json --severity-threshold=high
-      
+
       - name: Run npm audit for frontend
         working-directory: ./frontend
         run: |
@@ -44,13 +44,13 @@ jobs:
   secret-scan:
     name: Secret Scanning
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # fetch-depth: 0 intentionally removed — full history scan will flag old
-          # .env commits that still exist in git history before BFG cleanup is done.
+          # fetch-depth: 0 intentionally omitted — full history scan flags old
+          # .env commits still in git history before BFG cleanup is done.
           # Restore fetch-depth: 0 after running BFG Repo-Cleaner to purge those commits.
           fetch-depth: 1
 
@@ -63,13 +63,13 @@ jobs:
   code-quality:
     name: Code Quality Analysis
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
