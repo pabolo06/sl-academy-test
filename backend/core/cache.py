@@ -3,32 +3,54 @@ SL Academy Platform - Redis Caching Layer
 Provides caching decorators and utilities for performance optimization
 """
 
-import redis
+import redis.asyncio as redis
 import json
 import hashlib
-from typing import Optional, Any, Callable
+from typing import Optional, Callable
 from functools import wraps
 import logging
 
 logger = logging.getLogger(__name__)
 
+# Lazy async client — initialized on first use inside an async context
+_redis_client: Optional[redis.Redis] = None
+_redis_disabled: bool = False  # set to True after a failed connection attempt
 
-def _connect_redis():
-    """Tenta conectar ao Redis; retorna None silenciosamente se não disponível."""
+
+async def _get_redis() -> Optional[redis.Redis]:
+    """
+    Returns the async Redis client, connecting on first call.
+    Returns None (and disables further attempts) if Redis is unavailable.
+    """
+    global _redis_client, _redis_disabled
+
+    if _redis_disabled:
+        return None
+
+    if _redis_client is not None:
+        return _redis_client
+
     try:
         from core.config import settings
         if not settings.redis_url:
+            _redis_disabled = True
             return None
-        client = redis.from_url(settings.redis_url, socket_connect_timeout=2, socket_timeout=2)
-        client.ping()
+
+        client = redis.from_url(
+            settings.redis_url,
+            socket_connect_timeout=2,
+            socket_timeout=2,
+            decode_responses=True,
+        )
+        await client.ping()
+        _redis_client = client
         logger.info("Redis conectado com sucesso.")
-        return client
+        return _redis_client
+
     except Exception as e:
         logger.warning(f"Redis indisponível, cache desabilitado: {e}")
+        _redis_disabled = True  # persists across calls — read at the top of this function
         return None
-
-
-redis_client = _connect_redis()
 
 
 def cache_key(*args, **kwargs) -> str:
@@ -40,11 +62,11 @@ def cache_key(*args, **kwargs) -> str:
 def cached(ttl: int = 300, prefix: str = ''):
     """
     Cache decorator for async functions.
-    
+
     Args:
         ttl: Time to live in seconds
         prefix: Cache key prefix for namespacing
-    
+
     Example:
         @cached(ttl=600, prefix="tracks")
         async def get_tracks(hospital_id: str):
@@ -53,84 +75,81 @@ def cached(ttl: int = 300, prefix: str = ''):
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            if redis_client is None:
+            client = await _get_redis()
+            if client is None:
                 return await func(*args, **kwargs)
-            
+
+            key = f"{prefix}:{func.__name__}:{cache_key(*args, **kwargs)}"
+
             try:
-                # Generate cache key
-                key = f"{prefix}:{func.__name__}:{cache_key(*args, **kwargs)}"
-                
-                # Try to get from cache
-                cached_value = redis_client.get(key)
+                cached_value = await client.get(key)
                 if cached_value:
                     logger.debug(f"Cache hit: {key}")
                     return json.loads(cached_value)
-                
-                # Cache miss - execute function
+
                 logger.debug(f"Cache miss: {key}")
                 result = await func(*args, **kwargs)
-                
-                # Store in cache
-                redis_client.setex(
+
+                await client.setex(
                     key,
                     ttl,
                     json.dumps(result, default=str)
                 )
-                
                 return result
-            
+
             except Exception as e:
                 logger.error(f"Cache error: {str(e)}")
-                # Fallback to executing function without cache
                 return await func(*args, **kwargs)
-        
+
         return wrapper
     return decorator
 
 
-def invalidate_cache(pattern: str):
+async def invalidate_cache(pattern: str) -> None:
     """
     Invalidate cache keys matching pattern.
-    
+
     Args:
         pattern: Redis key pattern (supports wildcards *)
-    
+
     Example:
-        invalidate_cache("tracks:*hospital-123*")
+        await invalidate_cache("tracks:*hospital-123*")
     """
-    if redis_client is None:
+    client = await _get_redis()
+    if client is None:
         return
-    
+
     try:
-        keys = redis_client.keys(pattern)
+        keys = await client.keys(pattern)
         if keys:
-            redis_client.delete(*keys)
+            await client.delete(*keys)
             logger.info(f"Invalidated {len(keys)} cache keys matching pattern: {pattern}")
     except Exception as e:
         logger.error(f"Cache invalidation error: {str(e)}")
 
 
-def get_cache_stats() -> dict:
+async def get_cache_stats() -> dict:
     """
     Get Redis cache statistics.
-    
+
     Returns:
         Dictionary with cache metrics
     """
-    if redis_client is None:
+    client = await _get_redis()
+    if client is None:
         return {
             "status": "disabled",
             "message": "Redis is not available"
         }
-    
+
     try:
-        info = redis_client.info()
-        
+        info = await client.info()
+
         hits = info.get('keyspace_hits', 0)
         misses = info.get('keyspace_misses', 0)
         total = hits + misses
         hit_rate = (hits / total * 100) if total > 0 else 0
-        
+
         return {
             "status": "active",
             "memory": {
@@ -149,7 +168,7 @@ def get_cache_stats() -> dict:
                 "blocked": info.get('blocked_clients', 0),
             },
             "keys": {
-                "total": redis_client.dbsize(),
+                "total": await client.dbsize(),
             }
         }
     except Exception as e:

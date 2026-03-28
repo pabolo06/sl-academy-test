@@ -13,7 +13,6 @@ from services.scoring import scoring_service
 from core.database import get_db
 from supabase import Client
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ router = APIRouter()
 
 
 @router.post("", response_model=TestAttemptResponse, status_code=status.HTTP_201_CREATED)
-async def submit_test_attempt(
+def submit_test_attempt(
     request: Request,
     attempt: TestAttemptCreate,
     _rate_limit: None = Depends(check_test_submission_rate_limit),
@@ -51,7 +50,7 @@ async def submit_test_attempt(
             )
         
         # Get correct answers for the lesson
-        correct_answers = await scoring_service.get_correct_answers(
+        correct_answers = scoring_service.get_correct_answers(
             db=db,
             lesson_id=attempt.lesson_id,
             question_type=attempt.type.value
@@ -87,7 +86,7 @@ async def submit_test_attempt(
             "lesson_id": str(attempt.lesson_id),
             "type": attempt.type.value,
             "score": test_score.score,
-            "answers": json.dumps(answers_dict)
+            "answers": answers_dict
         }).execute()
         
         if not response.data:
@@ -122,7 +121,7 @@ async def submit_test_attempt(
 
 
 @router.get("/lessons/{lesson_id}/attempts", response_model=List[TestAttemptResponse])
-async def get_lesson_attempts(
+def get_lesson_attempts(
     lesson_id: UUID,
     current_user: dict = Depends(get_current_user),
     db: Client = Depends(get_db)
@@ -142,7 +141,7 @@ async def get_lesson_attempts(
         
         attempts = []
         for attempt_data in response.data:
-            answers_dict = json.loads(attempt_data["answers"]) if isinstance(attempt_data["answers"], str) else attempt_data["answers"]
+            answers_dict = attempt_data["answers"]
             
             attempts.append(TestAttemptResponse(
                 id=UUID(attempt_data["id"]),

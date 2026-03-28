@@ -3,6 +3,7 @@ SL Academy Platform - AI Service
 Handles AI integration for recommendations and doubt summaries
 """
 
+import openai
 from openai import AsyncOpenAI
 from core.config import settings
 from typing import List, Dict, Optional
@@ -258,9 +259,13 @@ Guidelines:
 
             return response.choices[0].message.content.strip()
 
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, openai.APITimeoutError):
             logger.error("Assistant response generation timed out")
             return "I'm taking a bit longer to respond. Please try again in a moment."
+
+        except openai.APIError as e:
+            logger.error(f"OpenAI API error: {e.status_code} - {str(e)}")
+            return "I encountered an error while processing your request. Please try again."
 
         except Exception as e:
             logger.error(f"Error generating assistant response: {str(e)}")

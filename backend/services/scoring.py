@@ -71,7 +71,7 @@ class ScoringService:
         )
     
     @staticmethod
-    async def get_correct_answers(
+    def get_correct_answers(
         db: Client,
         lesson_id: UUID,
         question_type: str
