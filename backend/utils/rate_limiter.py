@@ -70,10 +70,20 @@ class RateLimiter:
 rate_limiter = RateLimiter()
 
 
+def _get_client_ip(request: Request) -> str:
+    """Extract real client IP respecting X-Forwarded-For from proxies (Railway, Vercel)"""
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
+    return request.client.host if request.client else "unknown"
+
+
 async def check_login_rate_limit(request: Request):
     """Rate limit dependency for login endpoint"""
-    # Use IP address as identifier
-    client_ip = request.client.host
+    client_ip = _get_client_ip(request)
     identifier = f"login:{client_ip}"
     
     # 5 attempts per 15 minutes

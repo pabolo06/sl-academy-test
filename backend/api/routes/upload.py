@@ -3,10 +3,14 @@ SL Academy Platform - File Upload Routes
 Handles secure file uploads to Supabase Storage
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request, status
 from pydantic import BaseModel
 from utils.session import get_current_user
 from utils.file_validation import file_validator
+from utils.rate_limiter import rate_limiter, _get_client_ip
+
+UPLOAD_MAX_PER_HOUR = 20
+UPLOAD_WINDOW_SECONDS = 60 * 60
 from core.database import get_db
 from core.config import settings
 from supabase import Client
@@ -27,21 +31,34 @@ class UploadResponse(BaseModel):
 
 @router.post("/image", response_model=UploadResponse)
 async def upload_image(
+    request: Request,
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user),
     db: Client = Depends(get_db)
 ):
     """
     Upload image file to Supabase Storage
-    
+
     - **file**: Image file (JPEG, PNG, WebP, max 5MB)
-    
+
     Validates file size and type using magic bytes
     Generates random filename for security
     Uploads to Supabase Storage with RLS
     Returns signed URL
     """
     try:
+        ip = _get_client_ip(request)
+        is_allowed, retry_after = await rate_limiter.check_rate_limit(
+            identifier=f"upload:{ip}:{current_user['user_id']}",
+            max_requests=UPLOAD_MAX_PER_HOUR,
+            window_seconds=UPLOAD_WINDOW_SECONDS,
+        )
+        if not is_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many upload requests. Please try again later.",
+                headers={"Retry-After": str(retry_after)},
+            )
         # Validate image
         mime_type, random_filename = await file_validator.validate_image(file)
         
@@ -112,20 +129,33 @@ async def upload_image(
 
 @router.post("/spreadsheet")
 async def upload_spreadsheet(
+    request: Request,
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
     """
     Upload and parse spreadsheet file
-    
+
     - **file**: Spreadsheet file (CSV, XLSX, max 10MB)
-    
+
     Validates file size and type using magic bytes
     Parses file in sandboxed environment
     Limits to 10,000 rows
     Returns parsed data
     """
     try:
+        ip = _get_client_ip(request)
+        is_allowed, retry_after = await rate_limiter.check_rate_limit(
+            identifier=f"upload:{ip}:{current_user['user_id']}",
+            max_requests=UPLOAD_MAX_PER_HOUR,
+            window_seconds=UPLOAD_WINDOW_SECONDS,
+        )
+        if not is_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many upload requests. Please try again later.",
+                headers={"Retry-After": str(retry_after)},
+            )
         # Validate spreadsheet
         mime_type, random_filename = await file_validator.validate_spreadsheet(file)
         
