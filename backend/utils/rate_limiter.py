@@ -94,9 +94,8 @@ async def check_login_rate_limit(request: Request):
 async def check_test_submission_rate_limit(request: Request):
     """Rate limit dependency for test submission endpoint"""
     from utils.session import session_manager
-    
-    # Use user ID as identifier
-    session = session_manager.get_session(request)
+
+    session = getattr(request.state, "session", None) or session_manager.get_session(request)
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -123,9 +122,8 @@ async def check_test_submission_rate_limit(request: Request):
 async def check_doubt_submission_rate_limit(request: Request):
     """Rate limit dependency for doubt submission endpoint"""
     from utils.session import session_manager
-    
-    # Use user ID as identifier
-    session = session_manager.get_session(request)
+
+    session = getattr(request.state, "session", None) or session_manager.get_session(request)
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -152,9 +150,8 @@ async def check_doubt_submission_rate_limit(request: Request):
 async def check_indicator_import_rate_limit(request: Request):
     """Rate limit dependency for indicator import endpoint"""
     from utils.session import session_manager
-    
-    # Use user ID as identifier
-    session = session_manager.get_session(request)
+
+    session = getattr(request.state, "session", None) or session_manager.get_session(request)
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -182,8 +179,7 @@ async def check_ai_request_rate_limit(request: Request):
     """Rate limit dependency for AI requests"""
     from utils.session import session_manager
 
-    # Use user ID as identifier
-    session = session_manager.get_session(request)
+    session = getattr(request.state, "session", None) or session_manager.get_session(request)
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -211,8 +207,7 @@ async def check_chat_rate_limit(request: Request):
     """Rate limit dependency for chat/assistant endpoint - more permissive than generic AI"""
     from utils.session import session_manager
 
-    # Use user ID as identifier
-    session = session_manager.get_session(request)
+    session = getattr(request.state, "session", None) or session_manager.get_session(request)
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

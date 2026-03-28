@@ -3,7 +3,7 @@ SL Academy Platform - Doubt Management Routes
 Handles doubt creation, querying, and answering with RBAC
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
 from uuid import UUID
 from models.doubts import Doubt, DoubtCreate, DoubtUpdate, DoubtStatus
@@ -23,7 +23,6 @@ router = APIRouter()
 
 @router.post("", response_model=Doubt, status_code=status.HTTP_201_CREATED)
 async def create_doubt(
-    request: Request,
     doubt: DoubtCreate,
     _rate_limit: None = Depends(check_doubt_submission_rate_limit),
     current_user: dict = Depends(get_current_user),
@@ -94,7 +93,7 @@ async def create_doubt(
         logger.error(f"Error creating doubt: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while creating doubt: {str(e)}"
+            detail="An error occurred while creating doubt"
         )
 
 
@@ -174,7 +173,8 @@ async def answer_doubt(
         response = db.table("doubts").update({
             "answer": doubt_update.answer,
             "status": DoubtStatus.ANSWERED.value,
-            "answered_by": current_user["user_id"]
+            "answered_by": current_user["user_id"],
+            "answered_at": datetime.utcnow().isoformat()
         }).eq("id", str(doubt_id)).is_("deleted_at", "null").execute()
         
         if not response.data:

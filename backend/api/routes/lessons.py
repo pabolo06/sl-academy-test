@@ -186,7 +186,7 @@ async def create_lesson(
         logger.error(f"Lesson data: track_id={lesson.track_id}, title={lesson.title}, duration={lesson.duration_seconds}, position={lesson.position}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while creating lesson: {str(e)}"
+            detail="An error occurred while creating lesson"
         )
 
 

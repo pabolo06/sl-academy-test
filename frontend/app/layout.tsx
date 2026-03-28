@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 
@@ -11,12 +11,14 @@ export const metadata: Metadata = {
   title: "SL Academy Platform",
   description: "B2B Hospital Education and Management Platform",
   manifest: "/manifest.json",
+}
+
+// themeColor and viewport must be exported separately in Next.js 14+
+export const viewport: Viewport = {
   themeColor: "#000000",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({

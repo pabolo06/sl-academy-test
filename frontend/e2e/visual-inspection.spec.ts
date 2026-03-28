@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
-const BASE = 'https://sl-academy.vercel.app';
+// Use the Playwright baseURL from playwright.config.ts (defaults to http://localhost:3000)
+const BASE = '';
 const MANAGER_EMAIL = 'gestor@teste.com';
 const MANAGER_PASS = 'teste123';
 const DOCTOR_EMAIL = 'medico@teste.com';
