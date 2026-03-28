@@ -32,8 +32,17 @@ const customJestConfig = {
     '/e2e/',
     '/__tests__/helpers/',
   ],
-  // coverageThreshold removed: only app/page.tsx has tests right now.
-  // Re-add once test coverage is expanded across components and lib.
+  // Minimum coverage thresholds — reflects current tested files.
+  // Increase as test suite grows (app pages, hooks, remaining components).
+  // Current coverage: ~4% global (100% on tested files, 0% on untested pages).
+  coverageThreshold: {
+    global: {
+      statements: 3,
+      branches: 3,
+      functions: 4,
+      lines: 3,
+    },
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
