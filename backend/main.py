@@ -75,11 +75,16 @@ app.add_middleware(
 # Startup event
 @app.on_event("startup")
 async def startup():
-    logger.info(f"App started - Env: {settings.environment}, Debug: {settings.debug}")
+    # Log the effective debug mode (never True in production regardless of DEBUG env var)
+    logger.info(f"FastAPI application started. Environment: {settings.environment}, Debug: {_debug_mode}")
 
-# Health endpoint
+# Health / ping endpoints (used by Railway health check and CI)
 @app.get("/health")
 async def health():
+    return JSONResponse({"status": "ok"})
+
+@app.get("/ping")
+async def ping():
     return JSONResponse({"status": "ok"})
 
 # Root endpoint
@@ -92,7 +97,7 @@ async def root():
 
 # Import routers - NOW RE-ENABLED
 try:
-    from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule
+    from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule, monitoring
 
     # Include routers
     app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
@@ -107,6 +112,7 @@ try:
     app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
     app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
     app.include_router(schedule.router, tags=["Schedule"])
+    app.include_router(monitoring.router)  # prefix="/api/monitoring" already set in router
 
     logger.info("All routers imported and registered successfully")
 except Exception as e:
