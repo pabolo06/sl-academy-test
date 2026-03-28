@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { scheduleApi } from '@/lib/api';
+import { scheduleApi, lessonApi, testAttemptApi } from '@/lib/api';
 import { ScheduleSlot } from '@/types';
 
 interface ProgressData {
@@ -31,22 +30,20 @@ export default function DashboardPage() {
   }, [user?.role]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-
     const fetchProgress = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) return;
-
-      const [lessonsRes, attemptsRes] = await Promise.all([
-        supabase.from('lessons').select('id', { count: 'exact' }).is('deleted_at', null),
-        supabase.from('test_attempts').select('lesson_id').eq('user_id', session.user.id).eq('type', 'post'),
-      ]);
-
-      const total = lessonsRes.count ?? 0;
-      const completedIds = new Set((attemptsRes.data || []).map((a: any) => a.lesson_id));
-      setProgress({ completed: completedIds.size, total });
+      try {
+        const lessons = await lessonApi.getAll();
+        const attemptResults = await Promise.all(
+          lessons.map(l => testAttemptApi.getByLesson(l.id).catch(() => [] as import('@/types').TestAttempt[]))
+        );
+        const completed = attemptResults.filter(attempts =>
+          attempts.some(a => a.type === 'post')
+        ).length;
+        setProgress({ completed, total: lessons.length });
+      } catch {
+        // silently fail — progress widget is non-critical
+      }
     };
-
     fetchProgress();
   }, []);
 

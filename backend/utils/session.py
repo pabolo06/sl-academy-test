@@ -128,13 +128,19 @@ session_manager = SessionManager()
 
 
 def get_current_user(request: Request) -> dict:
-    """Dependency to get current authenticated user"""
-    session = session_manager.get_session(request)
-    
+    """Dependency to get current authenticated user.
+
+    Reads from request.state.session (set by SessionValidationMiddleware),
+    which supports both cookie-based sessions and Supabase JWT Bearer tokens.
+    Falls back to reading the cookie directly for cases where the middleware
+    is not in the stack.
+    """
+    session = getattr(request.state, "session", None) or session_manager.get_session(request)
+
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated"
         )
-    
+
     return session

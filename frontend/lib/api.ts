@@ -199,17 +199,8 @@ export const testAttemptApi = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  getByLesson: (lessonId: string) => supabaseOr(
-    async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      let query = supabase.from('test_attempts').select('*').eq('lesson_id', lessonId).order('completed_at', { ascending: false });
-      if (session?.user?.id) query = query.eq('user_id', session.user.id);
-      const { data, error } = await query;
-      if (error) throw new ApiError(500, error.message);
-      return (data || []) as TestAttempt[];
-    },
-    () => fetchApi<TestAttempt[]>(`/api/test-attempts/lessons/${lessonId}/attempts`)
-  ),
+  getByLesson: (lessonId: string) =>
+    fetchApi<TestAttempt[]>(`/api/test-attempts/lessons/${lessonId}/attempts`),
 };
 
 // Doubt API

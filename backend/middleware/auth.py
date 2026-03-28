@@ -6,7 +6,9 @@ Validates sessions on protected routes and handles automatic refresh
 from fastapi import Request, Response, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from utils.session import session_manager
+from core.database import Database
 from datetime import datetime, timedelta
+from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -47,10 +49,15 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         # Check if route is public
         if self._is_public_route(request.url.path):
             return await call_next(request)
-        
-        # Validate session for protected routes
+
+        # 1. Try session cookie
         session = session_manager.get_session(request)
-        
+
+        # 2. Fallback: validate Supabase JWT from Authorization header
+        #    (frontend sends this when authenticated directly via Supabase Auth)
+        if not session:
+            session = self._get_session_from_bearer(request)
+
         if not session:
             logger.warning(f"Unauthorized access attempt to {request.url.path}")
             return Response(
@@ -58,21 +65,66 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 media_type="application/json"
             )
-        
+
+        # Inject into request.state so get_current_user / require_role can use it
+        request.state.session = session
+
         # Check if session needs refresh (activity within last 5 minutes)
         last_activity = datetime.fromisoformat(session["last_activity"])
         if datetime.utcnow() - last_activity > timedelta(minutes=5):
-            # Session will be refreshed in response
             request.state.refresh_session = True
-        
+
         # Process request
         response = await call_next(request)
-        
-        # Refresh session if needed
+
+        # Refresh session cookie if needed (no-op when session came from Bearer)
         if hasattr(request.state, "refresh_session") and request.state.refresh_session:
             session_manager.refresh_session(request, response)
-        
+
         return response
+
+    def _get_session_from_bearer(self, request: Request) -> Optional[dict]:
+        """Validate a Supabase JWT from the Authorization header.
+
+        Returns a session-compatible dict on success, None otherwise.
+        Uses the sync Supabase admin client (consistent with the rest of the
+        codebase; routes using sync I/O run in FastAPI's thread-pool executor).
+        """
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return None
+        token = auth_header[7:]
+        if not token:
+            return None
+        try:
+            db = Database.get_client()
+            user_response = db.auth.get_user(token)
+            if not user_response.user:
+                return None
+            user = user_response.user
+            profile_response = (
+                db.table("profiles")
+                .select("id, hospital_id, role")
+                .eq("id", str(user.id))
+                .is_("deleted_at", "null")
+                .single()
+                .execute()
+            )
+            if not profile_response.data:
+                return None
+            profile = profile_response.data
+            now = datetime.utcnow().isoformat()
+            return {
+                "user_id": str(user.id),
+                "email": user.email or "",
+                "hospital_id": str(profile["hospital_id"]),
+                "role": profile["role"],
+                "created_at": now,
+                "last_activity": now,
+            }
+        except Exception as e:
+            logger.debug(f"Bearer token validation failed: {e}")
+            return None
     
     def _is_public_route(self, path: str) -> bool:
         """Check if route is public"""
@@ -96,8 +148,9 @@ def require_role(*allowed_roles: str):
         @router.get("/admin", dependencies=[Depends(require_role("manager"))])
     """
     def role_checker(request: Request):
-        session = session_manager.get_session(request)
-        
+        # Prefer session injected by middleware (supports both cookie and Bearer)
+        session = getattr(request.state, "session", None) or session_manager.get_session(request)
+
         if not session:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
