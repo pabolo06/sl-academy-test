@@ -28,7 +28,9 @@ export function useAuth() {
       setUser(currentUser);
     } catch (err) {
       setError('Failed to load user');
-      console.error('Error loading user:', err);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Error loading user:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,9 @@ export function useAuth() {
       router.push('/login');
     } catch (err) {
       setError('Failed to logout');
-      console.error('Error logging out:', err);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Error logging out:', err);
+      }
     }
   };
 

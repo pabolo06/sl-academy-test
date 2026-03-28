@@ -37,7 +37,9 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
 
     return null;
   } catch (error) {
-    console.error('Error fetching current user:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Error fetching current user:', error);
+    }
     return null;
   }
 }
@@ -56,7 +58,9 @@ export async function logout(): Promise<void> {
       credentials: 'include',
     });
   } catch (error) {
-    console.error('Error logging out:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Error logging out:', error);
+    }
   }
 }
 
