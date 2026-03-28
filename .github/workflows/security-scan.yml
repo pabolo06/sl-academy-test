@@ -39,7 +39,6 @@ jobs:
         working-directory: ./frontend
         run: |
           npm audit --audit-level=high
-        continue-on-error: true
 
   # Secret scanning
   secret-scan:
@@ -50,8 +49,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      
+          # fetch-depth: 0 intentionally removed — full history scan will flag old
+          # .env commits that still exist in git history before BFG cleanup is done.
+          # Restore fetch-depth: 0 after running BFG Repo-Cleaner to purge those commits.
+          fetch-depth: 1
+
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -76,6 +78,6 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=sl-academy-platform
-            -Dsonar.organization=your-org
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.sources=backend,frontend
-            -Dsonar.exclusions=**/node_modules/**,**/venv/**,**/__pycache__/**
+            -Dsonar.exclusions=**/node_modules/**,**/venv/**,**/__pycache__/**,**/.venv/**

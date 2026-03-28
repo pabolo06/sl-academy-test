@@ -43,10 +43,11 @@ jobs:
         working-directory: ./backend
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL_TEST }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_TEST }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY_TEST }}   # config.py reads env="SUPABASE_KEY"
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY_TEST }}
           SESSION_SECRET_KEY: ${{ secrets.SESSION_SECRET_KEY_TEST }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
+          ENVIRONMENT: test
         run: |
           pip install pytest pytest-cov pytest-asyncio
           pytest tests/ --cov=. --cov-report=xml --cov-report=term
@@ -54,6 +55,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./backend/coverage.xml
           flags: backend
           name: backend-coverage
@@ -146,7 +148,7 @@ jobs:
     if: github.ref == 'refs/heads/staging'
     environment:
       name: staging
-      url: ${{ secrets.STAGING_URL }}
+      url: ${{ vars.STAGING_URL }}
     
     steps:
       - name: Checkout code
@@ -179,7 +181,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: ${{ secrets.PRODUCTION_URL }}
+      url: ${{ vars.PRODUCTION_URL }}
     
     steps:
       - name: Checkout code
