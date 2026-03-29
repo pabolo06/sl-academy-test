@@ -8,7 +8,12 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 from enum import Enum
-import bleach
+import re
+
+
+def _strip_html(text: str) -> str:
+    """Remove all HTML/script tags from text (replaces bleach.clean with tags=[])"""
+    return re.sub(r"<[^>]+>", "", text)
 
 
 class DoubtStatus(str, Enum):
@@ -26,7 +31,7 @@ class DoubtBase(BaseModel):
     @validator("text")
     def sanitize_text(cls, v):
         """Remove HTML/script tags from text"""
-        return bleach.clean(v, tags=[], strip=True)
+        return _strip_html(v)
 
 
 class DoubtCreate(DoubtBase):
@@ -41,7 +46,7 @@ class DoubtUpdate(BaseModel):
     @validator("answer")
     def sanitize_answer(cls, v):
         """Remove HTML/script tags from answer"""
-        return bleach.clean(v, tags=[], strip=True)
+        return _strip_html(v)
 
 
 class Doubt(DoubtBase):
