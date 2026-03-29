@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     postgresql-client \
     curl \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
