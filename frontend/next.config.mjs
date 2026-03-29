@@ -24,6 +24,10 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ESLint runs in CI (GitHub Actions) — skip during Vercel build to avoid
+  // pre-existing warnings blocking deployment.
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: false },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
