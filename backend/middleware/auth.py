@@ -25,11 +25,12 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
     PUBLIC_ROUTES = [
         "/",
         "/health",
+        "/ping",
         "/docs",
         "/openapi.json",
         "/api/auth/login",
-        "/api/auth/login/medico",   # NEW
-        "/api/auth/login/gestor",   # NEW
+        "/api/auth/login/medico",
+        "/api/auth/login/gestor",
     ]
     
     # Routes that start with these prefixes are public
