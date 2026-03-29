@@ -1,3 +1,6 @@
+const SUPABASE_HOST = 'joewhfllvdaygffsosor.supabase.co'
+const RAILWAY_URL = 'https://web-production-e40b7.up.railway.app'
+
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -8,11 +11,12 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      // unsafe-inline required by Next.js hydration; unsafe-eval removed (not needed in production)
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co",
-      "connect-src 'self' https://*.supabase.co https://web-production-e40b7.up.railway.app wss://*.supabase.co",
+      `img-src 'self' data: blob: https://${SUPABASE_HOST}`,
+      `connect-src 'self' https://${SUPABASE_HOST} ${RAILWAY_URL} wss://${SUPABASE_HOST}`,
       "frame-ancestors 'none'",
     ].join('; '),
   },
@@ -35,7 +39,7 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    unoptimized: true,
+    unoptimized: process.env.NODE_ENV === 'development',
     domains: [
       'localhost',
       'joewhfllvdaygffsosor.supabase.co'

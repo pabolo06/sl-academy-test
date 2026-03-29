@@ -309,15 +309,26 @@ async def get_current_user_info(
     """
     # Refresh session activity timestamp
     session_manager.refresh_session(request, response)
-    
-    # Fetch hospital name if not in session
-    hospital_name = None
+
+    # Revalidate hospital still exists — destroy session if not (deleted hospital edge case)
     try:
-        hospital_response = db.table("hospitals").select("name").eq("id", current_user["hospital_id"]).single().execute()
-        if hospital_response.data:
-            hospital_name = hospital_response.data["name"]
+        hospital_response = db.table("hospitals").select("name").eq(
+            "id", current_user["hospital_id"]
+        ).is_("deleted_at", "null").single().execute()
     except Exception as e:
-        logger.error(f"Error fetching hospital name in /me: {str(e)}")
+        logger.error(f"Error fetching hospital in /me: {str(e)}")
+        hospital_response = None
+
+    if not hospital_response or not hospital_response.data:
+        logger.warning(
+            f"User {current_user['user_id']} belongs to missing/deleted hospital "
+            f"{current_user['hospital_id']} — destroying session"
+        )
+        session_manager.destroy_session(response)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Your hospital account is no longer active"
+        )
 
     return {
         "user": {
@@ -325,7 +336,7 @@ async def get_current_user_info(
             "email": current_user["email"],
             "role": current_user["role"],
             "hospital_id": current_user["hospital_id"],
-            "hospital_name": hospital_name
+            "hospital_name": hospital_response.data["name"]
         }
     }
 
@@ -355,44 +366,47 @@ async def delete_user_account(
     try:
         user_id = current_user["user_id"]
         email = current_user["email"]
-        
+
         logger.info(f"Starting account deletion for user: {email} (ID: {user_id})")
-        
-        # 1. Delete all test attempts
-        test_attempts_response = db.table("test_attempts").delete().eq("profile_id", user_id).execute()
-        test_attempts_count = len(test_attempts_response.data) if test_attempts_response.data else 0
-        logger.info(f"Deleted {test_attempts_count} test attempts for user {user_id}")
-        
-        # 2. Delete all doubts submitted by the user (hard delete)
-        doubts_response = db.table("doubts").delete().eq("profile_id", user_id).execute()
-        doubts_count = len(doubts_response.data) if doubts_response.data else 0
-        logger.info(f"Deleted {doubts_count} doubts for user {user_id}")
-        
-        # 3. Anonymize doubts answered by the user (set answered_by to NULL)
-        # This preserves the doubt for the original asker but removes the manager's identity
-        answered_doubts_response = db.table("doubts").update({
-            "answered_by": None
-        }).eq("answered_by", user_id).execute()
-        answered_doubts_count = len(answered_doubts_response.data) if answered_doubts_response.data else 0
-        logger.info(f"Anonymized {answered_doubts_count} doubts answered by user {user_id}")
-        
-        # 4. Delete user profile (this will cascade due to ON DELETE CASCADE in foreign keys)
-        profile_response = db.table("profiles").delete().eq("id", user_id).execute()
-        if not profile_response.data:
-            logger.warning(f"Profile not found for user {user_id}, may have been already deleted")
-        
-        # 5. Delete auth user (this is the final step)
-        # Note: Supabase admin API is needed for this, using the service role
+
+        # 1. Delete auth user FIRST — if this fails, no data is lost and the user
+        #    can retry. Reversing the order prevents the ghost-account state where
+        #    data is gone but the user can still authenticate.
         try:
             db.auth.admin.delete_user(user_id)
             logger.info(f"Deleted auth user {user_id}")
         except Exception as auth_error:
             logger.error(f"Failed to delete auth user {user_id}: {str(auth_error)}")
-            # Continue anyway - the profile and data are deleted
-        
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Could not delete authentication account. Please contact support."
+            )
+
+        # 2. Delete all test attempts
+        test_attempts_response = db.table("test_attempts").delete().eq("profile_id", user_id).execute()
+        test_attempts_count = len(test_attempts_response.data) if test_attempts_response.data else 0
+        logger.info(f"Deleted {test_attempts_count} test attempts for user {user_id}")
+
+        # 3. Delete all doubts submitted by the user (hard delete)
+        doubts_response = db.table("doubts").delete().eq("profile_id", user_id).execute()
+        doubts_count = len(doubts_response.data) if doubts_response.data else 0
+        logger.info(f"Deleted {doubts_count} doubts for user {user_id}")
+
+        # 4. Anonymize doubts answered by the user (set answered_by to NULL)
+        answered_doubts_response = db.table("doubts").update({
+            "answered_by": None
+        }).eq("answered_by", user_id).execute()
+        answered_doubts_count = len(answered_doubts_response.data) if answered_doubts_response.data else 0
+        logger.info(f"Anonymized {answered_doubts_count} doubts answered by user {user_id}")
+
+        # 5. Delete user profile (cascades FK children)
+        profile_response = db.table("profiles").delete().eq("id", user_id).execute()
+        if not profile_response.data:
+            logger.warning(f"Profile not found for user {user_id}, may have been already deleted")
+
         # 6. Destroy session
         session_manager.destroy_session(response)
-        
+
         # 7. Log the deletion for audit purposes
         await logger_service.log_account_deletion(
             db=db,

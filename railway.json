@@ -7,7 +7,7 @@
   "deploy": {
     "startCommand": "python -m uvicorn main:app --host 0.0.0.0 --port 8000",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 30,
-    "numReplicas": 1
+    "healthcheckTimeout": 10,
+    "numReplicas": 2
   }
 }

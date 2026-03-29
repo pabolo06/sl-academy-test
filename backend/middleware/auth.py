@@ -9,6 +9,7 @@ from utils.session import session_manager
 from core.database import Database
 from datetime import datetime, timedelta
 from typing import Optional
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         # 2. Fallback: validate Supabase JWT from Authorization header
         #    (frontend sends this when authenticated directly via Supabase Auth)
         if not session:
-            session = self._get_session_from_bearer(request)
+            session = await self._get_session_from_bearer(request)
 
         if not session:
             logger.warning(f"Unauthorized access attempt to {request.url.path}")
@@ -83,12 +84,12 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
 
         return response
 
-    def _get_session_from_bearer(self, request: Request) -> Optional[dict]:
+    async def _get_session_from_bearer(self, request: Request) -> Optional[dict]:
         """Validate a Supabase JWT from the Authorization header.
 
         Returns a session-compatible dict on success, None otherwise.
-        Uses the sync Supabase admin client (consistent with the rest of the
-        codebase; routes using sync I/O run in FastAPI's thread-pool executor).
+        Runs the sync Supabase client in a thread pool with a 3-second timeout
+        to avoid blocking the event loop indefinitely if Supabase is slow.
         """
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
@@ -96,7 +97,8 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         token = auth_header[7:]
         if not token:
             return None
-        try:
+
+        def _validate_sync() -> Optional[dict]:
             db = Database.get_client()
             user_response = db.auth.get_user(token)
             if not user_response.user:
@@ -122,8 +124,17 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
                 "created_at": now,
                 "last_activity": now,
             }
+
+        try:
+            return await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(None, _validate_sync),
+                timeout=3.0,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Bearer token validation timed out after 3s")
+            return None
         except Exception as e:
-            logger.debug(f"Bearer token validation failed: {e}")
+            logger.debug(f"Bearer token validation failed: {type(e).__name__}: {e}")
             return None
     
     def _is_public_route(self, path: str) -> bool:

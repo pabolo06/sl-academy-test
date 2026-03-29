@@ -3,7 +3,7 @@ SL Academy Platform - Indicator Management Routes
 Handles hospital performance and safety metrics
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from typing import List
 from uuid import UUID
 from datetime import datetime
@@ -25,23 +25,22 @@ router = APIRouter()
 @cached(ttl=300, prefix="indicators")  # 5 minutes cache
 async def get_indicators(
     request: Request,
+    limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
+    offset: int = Query(0, ge=0, description="Number of records to skip"),
     current_user: dict = Depends(get_current_user),
     db: Client = Depends(get_db)
 ):
     """
     Get indicators for current user's hospital
-    
+
     Automatically filtered by hospital_id via RLS
     Cached for 5 minutes
+    Supports pagination via `limit` and `offset` query params
     """
     try:
-        # Query indicators with hospital isolation
         query = db.table("indicators").select("*").is_("deleted_at", "null")
-        
-        # Hospital isolation is handled by RLS, but we can be explicit
         query = query.eq("hospital_id", current_user["hospital_id"])
-        
-        response = query.order("reference_date", desc=True).execute()
+        response = query.order("reference_date", desc=True).limit(limit).offset(offset).execute()
         
         return [Indicator(**indicator) for indicator in response.data]
     

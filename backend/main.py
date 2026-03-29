@@ -95,29 +95,24 @@ async def root():
         "version": "1.0.0"
     })
 
-# Import routers - NOW RE-ENABLED
-try:
-    from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule, monitoring
+# Import routers — fail-fast: missing module must never silently produce a broken app
+from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule, monitoring
 
-    # Include routers
-    app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-    app.include_router(tracks.router, prefix="/api/tracks", tags=["Tracks"])
-    app.include_router(lessons.router, prefix="/api/lessons", tags=["Lessons"])
-    app.include_router(questions.router, prefix="/api", tags=["Questions"])
-    app.include_router(test_attempts.router, prefix="/api/test-attempts", tags=["Test Attempts"])
-    app.include_router(doubts.router, prefix="/api/doubts", tags=["Doubts"])
-    app.include_router(indicators.router, prefix="/api/indicators", tags=["Indicators"])
-    app.include_router(ai.router, prefix="/api", tags=["AI"])
-    app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
-    app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
-    app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
-    app.include_router(schedule.router, tags=["Schedule"])
-    app.include_router(monitoring.router)  # prefix="/api/monitoring" already set in router
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(tracks.router, prefix="/api/tracks", tags=["Tracks"])
+app.include_router(lessons.router, prefix="/api/lessons", tags=["Lessons"])
+app.include_router(questions.router, prefix="/api", tags=["Questions"])
+app.include_router(test_attempts.router, prefix="/api/test-attempts", tags=["Test Attempts"])
+app.include_router(doubts.router, prefix="/api/doubts", tags=["Doubts"])
+app.include_router(indicators.router, prefix="/api/indicators", tags=["Indicators"])
+app.include_router(ai.router, prefix="/api", tags=["AI"])
+app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
+app.include_router(schedule.router, tags=["Schedule"])
+app.include_router(monitoring.router)  # prefix="/api/monitoring" already set in router
 
-    logger.info("All routers imported and registered successfully")
-except Exception as e:
-    logger.error(f"Error importing routers: {e}", exc_info=True)
-    # Don't fail - let app run with just basic endpoints
+logger.info("All routers imported and registered successfully")
 
 if __name__ == "__main__":
     import uvicorn

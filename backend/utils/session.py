@@ -21,11 +21,14 @@ class SessionManager:
     SESSION_MAX_AGE = 24 * 60 * 60  # 24 hours in seconds
     
     def __init__(self):
-        # Derive Fernet key using PBKDF2 (100k iterations, fixed salt for determinism)
+        import hashlib
+        # Salt derived from the secret itself — avoids hardcoded value while
+        # keeping determinism (same secret always produces the same cipher key)
+        salt = hashlib.sha256(settings.session_secret_key.encode()).digest()[:16]
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
-            salt=b"sl_academy_session_kdf_v1",
+            salt=salt,
             iterations=100000,
         )
         raw_key = kdf.derive(settings.session_secret_key.encode())

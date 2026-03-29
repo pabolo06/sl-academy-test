@@ -39,6 +39,12 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+      - name: Security scan (Python dependencies)
+        working-directory: ./backend
+        run: |
+          pip install safety
+          safety check --continue-on-error
+
       - name: Run unit tests
         working-directory: ./backend
         env:
@@ -46,7 +52,6 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY_TEST }}   # config.py reads env="SUPABASE_KEY"
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY_TEST }}
           SESSION_SECRET_KEY: ${{ secrets.SESSION_SECRET_KEY_TEST }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
           ENVIRONMENT: test
         run: |
           pip install pytest pytest-cov pytest-asyncio
@@ -182,6 +187,10 @@ jobs:
         run: |
           npx supabase@latest db push \
             --db-url "${{ secrets.DATABASE_URL_STAGING }}" \
+            --project-id "${{ secrets.SUPABASE_PROJECT_ID_STAGING }}" \
+            --dry-run
+          npx supabase@latest db push \
+            --db-url "${{ secrets.DATABASE_URL_STAGING }}" \
             --project-id "${{ secrets.SUPABASE_PROJECT_ID_STAGING }}"
 
   # Deploy to production
@@ -240,10 +249,17 @@ jobs:
 
       - name: Verify deployment
         run: |
-          sleep 20
-          curl --fail --silent --show-error "${{ vars.PRODUCTION_URL }}/ping" \
-            && echo "Health check passed" \
-            || (echo "Health check failed" && exit 1)
+          MAX_RETRIES=12
+          RETRY_DELAY=10
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Health check attempt $i/$MAX_RETRIES..."
+            if curl --fail --silent --show-error "${{ vars.PRODUCTION_URL }}/health"; then
+              echo "Health check passed"
+              exit 0
+            fi
+            [ $i -lt $MAX_RETRIES ] && sleep $RETRY_DELAY
+          done
+          echo "Health check failed after $MAX_RETRIES attempts" && exit 1
 
       - name: Notify team
         if: always()
