@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from typing import Dict, Optional
 
 from core.monitoring import metrics
-from core.database import get_supabase_client
-from middleware.auth import require_manager
+from core.database import Database
+from middleware.auth import require_role
 
 router = APIRouter(prefix="/api/monitoring", tags=["monitoring"])
 
@@ -52,7 +52,7 @@ async def health_check():
     
     # Check database connection
     try:
-        supabase = get_supabase_client()
+        supabase = Database.get_client()
         # Simple query to test connection
         result = supabase.table("hospitals").select("id").limit(1).execute()
         checks["database"] = True
@@ -74,7 +74,7 @@ async def health_check():
     )
 
 
-@router.get("/metrics", response_model=MetricsResponse, dependencies=[Depends(require_manager)])
+@router.get("/metrics", response_model=MetricsResponse, dependencies=[Depends(require_role("manager"))])
 async def get_metrics():
     """
     Get application metrics.
@@ -86,7 +86,7 @@ async def get_metrics():
     )
 
 
-@router.get("/system", response_model=SystemMetricsResponse, dependencies=[Depends(require_manager)])
+@router.get("/system", response_model=SystemMetricsResponse, dependencies=[Depends(require_role("manager"))])
 async def get_system_metrics():
     """
     Get system resource metrics.
@@ -118,7 +118,7 @@ async def get_system_metrics():
     )
 
 
-@router.post("/reset-metrics", dependencies=[Depends(require_manager)])
+@router.post("/reset-metrics", dependencies=[Depends(require_role("manager"))])
 async def reset_metrics():
     """
     Reset all metrics.
@@ -136,7 +136,7 @@ async def readiness_check():
     """
     try:
         # Check database connection
-        supabase = get_supabase_client()
+        supabase = Database.get_client()
         supabase.table("hospitals").select("id").limit(1).execute()
         
         return {"status": "ready"}
