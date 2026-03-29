@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     # Session Configuration
     session_secret_key: str = Field(default="temporary_secret_key_change_me_in_production_32_chars", env="SESSION_SECRET_KEY")
 
-    # AI Configuration (OpenAI)
-    openai_api_key: str = Field(default="sk-placeholder", env="OPENAI_API_KEY")
+    # AI Configuration (OpenAI) — disabled, set when re-enabling
+    openai_api_key: str = Field(default="", env="OPENAI_API_KEY")
 
     @validator("session_secret_key")
     def validate_session_secret(cls, v):
@@ -63,11 +63,6 @@ class Settings(BaseSettings):
             raise ValueError("SUPABASE_URL must start with https://")
         return v
 
-    @validator("openai_api_key")
-    def validate_openai_key(cls, v):
-        if v == "sk-placeholder":
-            raise ValueError("OPENAI_API_KEY must be set to a real OpenAI API key (env: OPENAI_API_KEY)")
-        return v
     ai_model: str = Field(default="gpt-4-turbo-preview", env="AI_MODEL")
     
     # Rate Limiting
