@@ -35,10 +35,18 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+_HEALTHCHECK_PATHS = {"/health", "/ping"}
+
 class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
-    """Force HTTPS in production. Redirects HTTP requests to HTTPS."""
+    """Force HTTPS in production. Redirects HTTP requests to HTTPS.
+    Health check paths are excluded — Railway sends them with x-forwarded-proto: http
+    and does not follow 301 redirects."""
     async def dispatch(self, request: Request, call_next):
-        if settings.environment == "production" and request.headers.get("x-forwarded-proto") == "http":
+        if (
+            settings.environment == "production"
+            and request.headers.get("x-forwarded-proto") == "http"
+            and request.url.path not in _HEALTHCHECK_PATHS
+        ):
             https_url = str(request.url).replace("http://", "https://", 1)
             return RedirectResponse(url=https_url, status_code=301)
         return await call_next(request)
