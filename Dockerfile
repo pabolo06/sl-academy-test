@@ -24,7 +24,7 @@ COPY backend/ /app/
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-EXPOSE 8000
+EXPOSE ${PORT:-8000}
 
-# Run the application with detailed output
-CMD [  "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+# Run the application — Railway injects $PORT at runtime; fall back to 8000 locally
+CMD ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"]
