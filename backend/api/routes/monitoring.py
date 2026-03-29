@@ -7,7 +7,7 @@ import time
 import psutil
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Optional
+from typing import Any, Dict
 
 from core.monitoring import metrics
 from core.database import Database
@@ -27,7 +27,7 @@ class HealthResponse(BaseModel):
 
 class MetricsResponse(BaseModel):
     """Metrics response."""
-    metrics: Dict[str, any]
+    metrics: Dict[str, Any]
     timestamp: float
 
 
@@ -54,7 +54,7 @@ async def health_check():
     try:
         supabase = Database.get_client()
         # Simple query to test connection
-        result = supabase.table("hospitals").select("id").limit(1).execute()
+        supabase.table("hospitals").select("id").limit(1).execute()
         checks["database"] = True
     except Exception as e:
         checks["database"] = False
