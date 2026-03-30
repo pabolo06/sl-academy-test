@@ -18,11 +18,20 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from datetime import date
 from typing import Any
 
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
+
 from core.config import settings
 from core.database import Database
+from utils.pii_scrubber import scrub_pii
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +168,79 @@ class RosteringTools:
         self.requester_id = requester_id
         self.db = Database.get_client()
 
+    # ── Credential check (non-raising) ─────────────────────────────────────────
+
+    def _check_credentials(self, doctor_id: str, track_id: str) -> tuple[bool, str]:
+        """
+        Validate that a doctor holds active certification for a track.
+
+        Unlike schedule.py's _validate_doctor_credentials (which raises HTTPException),
+        this returns (passed: bool, reason: str) so it can be used inside tool
+        call executors without breaking the function calling loop.
+        """
+        try:
+            track_resp = (
+                self.db.table("tracks")
+                .select("title, required_score")
+                .eq("id", track_id)
+                .is_("deleted_at", "null")
+                .single()
+                .execute()
+            )
+            if not track_resp.data:
+                return True, ""  # track not found — no requirement enforced
+
+            required_score = track_resp.data.get("required_score")
+            if required_score is None:
+                return True, ""  # no score requirement on this track
+
+            track_title = track_resp.data["title"]
+
+            lessons_resp = (
+                self.db.table("lessons")
+                .select("id, title")
+                .eq("track_id", track_id)
+                .is_("deleted_at", "null")
+                .execute()
+            )
+            if not lessons_resp.data:
+                return True, ""  # no lessons — cannot validate
+
+            lesson_ids = [l["id"] for l in lessons_resp.data]
+
+            attempts_resp = (
+                self.db.table("test_attempts")
+                .select("lesson_id, score")
+                .eq("profile_id", doctor_id)
+                .eq("type", "post")
+                .in_("lesson_id", lesson_ids)
+                .execute()
+            )
+
+            best_scores: dict[str, float] = {}
+            for attempt in (attempts_resp.data or []):
+                lid = attempt["lesson_id"]
+                if lid not in best_scores or attempt["score"] > best_scores[lid]:
+                    best_scores[lid] = float(attempt["score"])
+
+            failed = [
+                lid for lid in lesson_ids
+                if best_scores.get(lid) is None or best_scores[lid] < float(required_score)
+            ]
+
+            if failed:
+                return False, (
+                    f"Médico não possui certificação mínima ({required_score}%) "
+                    f"para a track '{track_title}'. "
+                    f"{len(failed)}/{len(lesson_ids)} aulas pendentes."
+                )
+
+            return True, ""
+
+        except Exception as exc:
+            logger.warning(f"Credential check error: {exc}")
+            return True, ""  # fail-open: do not block on transient errors
+
     def execute(self, tool_name: str, args: dict) -> Any:
         """Dispatch a tool call by name."""
         dispatch = {
@@ -227,11 +309,36 @@ class RosteringTools:
             if s.get("schedules", {}).get("hospital_id") == self.hospital_id
         }
 
-        return [
+        available = [
             {"doctor_id": d["id"], "full_name": d["full_name"], "email": d["email"]}
             for did, d in all_doctors.items()
             if did not in busy_ids
         ]
+
+        # ── Credential filter ──────────────────────────────────────────────────
+        # If any schedule for this date+shift has a required_track_id,
+        # filter out doctors who are not certified for it.
+        schedule_resp = (
+            self.db.table("schedule_slots")
+            .select("schedules(required_track_id)")
+            .eq("slot_date", slot_date)
+            .eq("shift", shift)
+            .execute()
+        )
+        required_track_ids = {
+            s["schedules"]["required_track_id"]
+            for s in (schedule_resp.data or [])
+            if s.get("schedules", {}).get("required_track_id")
+        }
+
+        if required_track_ids:
+            track_id = next(iter(required_track_ids))  # use first requirement
+            available = [
+                doc for doc in available
+                if self._check_credentials(doc["doctor_id"], track_id)[0]
+            ]
+
+        return available
 
     def _request_shift_swap(
         self, slot_id: str, target_doctor_id: str, reason: str = ""
@@ -254,6 +361,24 @@ class RosteringTools:
             return {"error": "Slot does not belong to your hospital."}
         if target_doctor_id == self.requester_id:
             return {"error": "You cannot swap a slot with yourself."}
+
+        # ── Credential check ───────────────────────────────────────────────────
+        # If the schedule requires a track certification, the target doctor
+        # must hold it — the AI cannot suggest/approve uncertified swaps.
+        slot_full_resp = (
+            self.db.table("schedule_slots")
+            .select("schedules(id, required_track_id)")
+            .eq("id", slot_id)
+            .single()
+            .execute()
+        )
+        if slot_full_resp.data:
+            req_track = slot_full_resp.data.get("schedules", {}).get("required_track_id")
+            if req_track:
+                passed, cred_reason = self._check_credentials(target_doctor_id, req_track)
+                if not passed:
+                    return {"error": f"Troca bloqueada: {cred_reason}"}
+        # ───────────────────────────────────────────────────────────────────────
 
         # Check no pending swap already exists for this slot
         existing_resp = (
@@ -353,27 +478,59 @@ class AIRosteringService:
         client = self._get_client()
         tools = RosteringTools(hospital_id=hospital_id, requester_id=requester_id)
 
+        # PII scrub: sanitise user messages before sending to the LLM
+        sanitised_messages = [
+            {**m, "content": scrub_pii(m["content"])} if m.get("role") == "user" else m
+            for m in messages
+        ]
+
         # Build full message list with system prompt
         full_messages = [
             {"role": "system", "content": _ROSTERING_SYSTEM_PROMPT},
-            *messages,
+            *sanitised_messages,
         ]
 
         tool_calls_made: list[str] = []
         swap_created = False
+        t0 = time.time()
+
+        _FALLBACK_MSG = (
+            "Assistente indisponível no momento. "
+            "Por favor tente novamente em alguns minutos ou contacte o seu gestor."
+        )
 
         # ── Function calling loop (max 5 iterations to prevent runaway) ────────
         for _iteration in range(5):
-            response = await client.chat.completions.create(
-                model=settings.ai_model,
-                messages=full_messages,
-                tools=_TOOLS,
-                tool_choice="auto",
-                temperature=0.2,
-                max_tokens=800,
-            )
+            try:
+                response = await self._call_openai(
+                    client, full_messages, _TOOLS
+                )
+            except Exception as exc:
+                logger.error(
+                    "AI Rostering OpenAI call failed after retries",
+                    extra={"hospital_id": hospital_id, "error": str(exc)},
+                )
+                return {
+                    "reply": _FALLBACK_MSG,
+                    "tool_calls_made": tool_calls_made,
+                    "swap_created": False,
+                }
 
             message = response.choices[0].message
+
+            # Log token usage for observability
+            usage = getattr(response, "usage", None)
+            if usage:
+                logger.info(
+                    "AI Rostering OpenAI call",
+                    extra={
+                        "hospital_id": hospital_id,
+                        "prompt_tokens": usage.prompt_tokens,
+                        "completion_tokens": usage.completion_tokens,
+                        "total_tokens": usage.total_tokens,
+                        "elapsed_ms": round((time.time() - t0) * 1000),
+                    },
+                )
 
             # No tool calls → final answer
             if not message.tool_calls:
@@ -414,6 +571,26 @@ class AIRosteringService:
             "tool_calls_made": tool_calls_made,
             "swap_created": swap_created,
         }
+
+    # ── Tenacity-wrapped OpenAI call ───────────────────────────────────────────
+
+    @staticmethod
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True,
+    )
+    async def _call_openai(client, messages, tools):
+        """Single OpenAI chat completion call with exponential-backoff retry."""
+        return await client.chat.completions.create(
+            model=settings.ai_model,
+            messages=messages,
+            tools=tools,
+            tool_choice="auto",
+            temperature=0.2,
+            max_tokens=800,
+        )
 
 
 # ── Module-level singleton ─────────────────────────────────────────────────────

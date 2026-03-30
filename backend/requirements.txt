@@ -60,3 +60,12 @@ mypy==1.8.0
 
 # Caching
 redis>=5.0.0
+
+# Background Scheduling
+apscheduler>=3.10.0
+
+# Resilience
+tenacity>=8.2.0
+
+# Structured Logging
+python-json-logger>=2.0.0

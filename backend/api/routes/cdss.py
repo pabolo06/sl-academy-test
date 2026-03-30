@@ -10,7 +10,7 @@ Endpoints:
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from utils.session import get_current_user
@@ -37,6 +37,10 @@ class ClinicalQuestion(BaseModel):
         ge=1,
         le=10,
         description="Maximum number of protocol sources to retrieve.",
+    )
+    chat_history: List[Dict[str, Any]] = Field(
+        default=[],
+        description="Prior conversation turns [{role, content}] for multi-turn context.",
     )
 
 
@@ -98,6 +102,7 @@ async def ask_clinical_question(
         question=body.question,
         hospital_id=current_user["hospital_id"],
         top_k=body.top_k,
+        chat_history=body.chat_history or None,
     )
 
     return CDSSResponse(**result)

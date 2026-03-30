@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { AlertCircle, Loader } from 'lucide-react';
 import DoctorCard from './DoctorCard';
@@ -11,14 +11,25 @@ interface KanbanBoardProps {
   schedule: Schedule;
   onSlotRemoved: (slotId: string) => void;
   onSlotAdded: (slot: ScheduleSlot) => void;
+  /** Called with the full updated slots array after an optimistic change */
+  onSlotsChanged?: (slots: ScheduleSlot[]) => void;
   isLoading?: boolean;
 }
 
 type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export default function KanbanBoard({ schedule, onSlotRemoved, onSlotAdded, isLoading }: KanbanBoardProps) {
+export default function KanbanBoard({
+  schedule,
+  onSlotRemoved,
+  onSlotAdded,
+  onSlotsChanged,
+  isLoading,
+}: KanbanBoardProps) {
   const [isAddingSlot, setIsAddingSlot] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Ref to hold the pre-drag snapshot for rollback
+  const slotSnapshotRef = useRef<ScheduleSlot[] | null>(null);
 
   const weekStart = new Date(schedule.week_start);
   const shifts: ShiftType[] = ['morning', 'afternoon', 'night'];
@@ -44,6 +55,15 @@ export default function KanbanBoard({ schedule, onSlotRemoved, onSlotAdded, isLo
     );
   };
 
+  // ── Rollback helper ────────────────────────────────────────────────────────
+  const rollback = useCallback(() => {
+    if (slotSnapshotRef.current && onSlotsChanged) {
+      onSlotsChanged(slotSnapshotRef.current);
+    }
+    slotSnapshotRef.current = null;
+  }, [onSlotsChanged]);
+
+  // ── Optimistic drag handler ────────────────────────────────────────────────
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
@@ -53,23 +73,51 @@ export default function KanbanBoard({ schedule, onSlotRemoved, onSlotAdded, isLo
     setError(null);
     setIsAddingSlot(true);
 
-    try {
-      // Parse destination: format is "day-shift" (e.g., "0-morning")
-      const [dayStr, shift] = destination.droppableId.split('-');
-      const dayOfWeek = parseInt(dayStr) as DayOfWeek;
-      const date = dayDates[dayOfWeek];
-      const dateStr = date.toISOString().split('T')[0];
+    // Parse destination: format is "day-shift" (e.g., "0-morning")
+    const [dayStr, shift] = destination.droppableId.split('-');
+    const dayOfWeek = parseInt(dayStr) as DayOfWeek;
+    const date = dayDates[dayOfWeek];
+    const dateStr = date.toISOString().split('T')[0];
 
-      // If coming from a shift (not from the sidebar), remove from old location first
+    // ── 1. Snapshot current state for rollback ────────────────────────────
+    const currentSlots = [...(schedule.schedule_slots || [])];
+    slotSnapshotRef.current = currentSlots;
+
+    // ── 2. Optimistic update — immediately update UI ─────────────────────
+    let optimisticSlots = [...currentSlots];
+
+    // Remove from old position (if not from sidebar)
+    if (source.droppableId !== 'sidebar') {
+      optimisticSlots = optimisticSlots.filter((s) => s.id !== draggableId);
+    }
+
+    // Add to new position (temporary ID until backend confirms)
+    const tempSlot: ScheduleSlot = {
+      id: `temp-${Date.now()}`,
+      schedule_id: schedule.id,
+      doctor_id: draggableId,
+      doctor_email: '',
+      slot_date: dateStr,
+      shift: shift as ShiftType,
+      created_at: new Date().toISOString(),
+    };
+    optimisticSlots.push(tempSlot);
+
+    // Push optimistic state to parent
+    if (onSlotsChanged) {
+      onSlotsChanged(optimisticSlots);
+    }
+
+    // ── 3. Backend call — confirm or rollback ────────────────────────────
+    try {
       if (source.droppableId !== 'sidebar') {
-        const existingSlot = schedule.schedule_slots?.find((s) => s.id === draggableId);
+        const existingSlot = currentSlots.find((s) => s.id === draggableId);
         if (existingSlot) {
           await scheduleApi.removeSlot(existingSlot.id);
           onSlotRemoved(existingSlot.id);
         }
       }
 
-      // Add to new location
       const slotData: ScheduleSlotCreate = {
         doctor_id: draggableId,
         slot_date: dateStr,
@@ -79,10 +127,22 @@ export default function KanbanBoard({ schedule, onSlotRemoved, onSlotAdded, isLo
 
       const newSlot = await scheduleApi.addSlot(schedule.id, slotData);
       onSlotAdded(newSlot);
+
+      // Replace temp slot with real slot from backend
+      if (onSlotsChanged) {
+        const finalSlots = optimisticSlots
+          .filter((s) => s.id !== tempSlot.id)
+          .concat(newSlot);
+        onSlotsChanged(finalSlots);
+      }
+
+      slotSnapshotRef.current = null; // success — discard snapshot
     } catch (err: any) {
+      // ── Rollback on error (e.g. 403 Forbidden) ─────────────────────────
       const msg = err.message || 'Erro ao adicionar médico ao turno';
       setError(msg);
-      console.error('Erro ao adicionar slot:', err);
+      console.error('Optimistic UI rollback:', err);
+      rollback();
     } finally {
       setIsAddingSlot(false);
     }

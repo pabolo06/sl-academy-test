@@ -15,12 +15,44 @@ is not configured, so the app starts without errors.
 from __future__ import annotations
 
 import logging
+import time
 from typing import Optional
+
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 from core.config import settings
 from core.database import Database
+from utils.pii_scrubber import scrub_pii
 
 logger = logging.getLogger(__name__)
+
+
+# ── In-memory TTL cache ─────────────────────────────────────────────────────────
+
+_CACHE_TTL_SECONDS = 3600  # 1 hour
+_answer_cache: dict[str, tuple[float, dict]] = {}  # key → (expiry_ts, result)
+
+
+def _cache_get(key: str) -> dict | None:
+    """Return cached result if it exists and hasn't expired."""
+    entry = _answer_cache.get(key)
+    if entry is None:
+        return None
+    expiry, result = entry
+    if time.time() > expiry:
+        del _answer_cache[key]
+        return None
+    return result
+
+
+def _cache_set(key: str, result: dict) -> None:
+    """Store a result in cache with TTL."""
+    _answer_cache[key] = (time.time() + _CACHE_TTL_SECONDS, result)
 
 # CDSS system prompt — clinical accuracy over creativity
 _SYSTEM_PROMPT = """Você é um Sistema de Suporte à Decisão Clínica (CDSS) do hospital.
@@ -136,6 +168,7 @@ class CDSSService:
         hospital_id: str,
         top_k: int = 5,
         match_threshold: float = 0.5,
+        chat_history: list[dict] | None = None,
     ) -> dict:
         """
         Core RAG endpoint: answer a clinical question using internal protocols.
@@ -166,8 +199,23 @@ class CDSSService:
             }
 
         try:
-            # 1. Embed the question
-            query_embedding = await self._embed_text(question)
+            # 0. PII scrub: sanitise the question before it reaches the LLM
+            safe_question = scrub_pii(question)
+
+            # 0b. Cache check — use lowercase key for case-insensitive matching
+            cache_key = f"{hospital_id}:{safe_question.lower().strip()}"
+            cached = _cache_get(cache_key)
+            if cached is not None:
+                logger.info(
+                    "CDSS cache hit",
+                    extra={"hospital_id": hospital_id, "cache": "hit"},
+                )
+                return cached
+
+            t0 = time.time()
+
+            # 1. Embed the (sanitised) question
+            query_embedding = await self._embed_text(safe_question)
 
             # 2. Semantic search via pgvector RPC
             db = Database.get_client()
@@ -180,8 +228,10 @@ class CDSSService:
 
             context_lessons = search_resp.data or []
 
-            # 3. Generate grounded answer
-            answer = await self._generate_answer(question, context_lessons)
+            # 3. Generate grounded answer (with optional conversation history)
+            answer = await self._generate_answer(
+                safe_question, context_lessons, chat_history=chat_history
+            )
 
             # 4. Build citations
             citations = [
@@ -204,16 +254,26 @@ class CDSSService:
             )
 
             logger.info(
-                f"CDSS: answered question for hospital {hospital_id} — "
-                f"{len(citations)} sources, confidence={confidence}"
+                "CDSS answered",
+                extra={
+                    "hospital_id": hospital_id,
+                    "sources": len(citations),
+                    "confidence": confidence,
+                    "elapsed_ms": round((time.time() - t0) * 1000),
+                },
             )
 
-            return {
+            result = {
                 "answer": answer,
                 "citations": citations,
                 "confidence": confidence,
                 "sources_found": len(citations),
             }
+
+            # Store in cache for future identical questions
+            _cache_set(cache_key, result)
+
+            return result
 
         except Exception as exc:
             logger.error(f"CDSS: error answering question: {exc}")
@@ -236,8 +296,16 @@ class CDSSService:
             self._openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
         return self._openai_client
 
+    # ── Tenacity-wrapped OpenAI calls ──────────────────────────────────────
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True,
+    )
     async def _embed_text(self, text: str) -> list[float]:
-        """Call OpenAI text-embedding-3-small and return the vector."""
+        """Call OpenAI text-embedding-3-small and return the vector (with retry)."""
         client = self._get_client()
         response = await client.embeddings.create(
             input=text[:8000],  # token limit safety guard
@@ -245,8 +313,24 @@ class CDSSService:
         )
         return response.data[0].embedding
 
-    async def _generate_answer(self, question: str, context_lessons: list[dict]) -> str:
-        """Generate a protocol-grounded answer using retrieved lesson context."""
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True,
+    )
+    async def _generate_answer(
+        self,
+        question: str,
+        context_lessons: list[dict],
+        chat_history: list[dict] | None = None,
+    ) -> str:
+        """Generate a protocol-grounded answer using retrieved lesson context.
+
+        If *chat_history* is provided, prior turns are injected between the
+        system prompt and the current question so the LLM maintains clinical
+        context across a multi-turn conversation.
+        """
         client = self._get_client()
 
         if not context_lessons:
@@ -258,20 +342,30 @@ class CDSSService:
                 for l in context_lessons
             )
 
+        # Build message list: system → (optional history) → current question
+        messages: list[dict] = [{"role": "system", "content": _SYSTEM_PROMPT}]
+
+        # Inject prior conversation turns (PII already scrubbed at ask() level)
+        if chat_history:
+            for turn in chat_history:
+                role = turn.get("role", "user")
+                content = turn.get("content", "")
+                if role in ("user", "assistant") and content:
+                    messages.append({"role": role, "content": scrub_pii(content)})
+
+        messages.append({
+            "role": "user",
+            "content": (
+                f"Pergunta clínica: {question}\n\n"
+                f"Protocolos internos disponíveis:\n{context_block}"
+            ),
+        })
+
         response = await client.chat.completions.create(
             model=settings.ai_model,
             temperature=0.1,       # clinical accuracy requires low temperature
             max_tokens=1000,
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": (
-                        f"Pergunta clínica: {question}\n\n"
-                        f"Protocolos internos disponíveis:\n{context_block}"
-                    ),
-                },
-            ],
+            messages=messages,
         )
 
         return response.choices[0].message.content
