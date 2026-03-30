@@ -198,10 +198,10 @@ async def add_schedule_slot(
     if current_user.get("role") != "manager":
         raise HTTPException(status_code=403, detail="Only managers can schedule doctors")
 
-    # Verify schedule belongs to user's hospital
-    schedule_response = db.table("schedules").select("hospital_id").eq(
-        "id", str(schedule_id)
-    ).single().execute()
+    # Verify schedule belongs to user's hospital and fetch credentialing config
+    schedule_response = db.table("schedules").select(
+        "hospital_id, required_track_id"
+    ).eq("id", str(schedule_id)).single().execute()
 
     if not schedule_response.data:
         raise HTTPException(status_code=404, detail="Schedule not found")
@@ -210,15 +210,16 @@ async def add_schedule_slot(
         raise HTTPException(status_code=403, detail="Access denied")
 
     # ── CREDENTIALING CHECK ────────────────────────────────────────────────────
-    # If the slot demands a track certification, validate the doctor's post-test
-    # scores before allowing the assignment.  This implements the Frappe LMS
-    # "active credentialing" pattern: a shift can only be filled by a doctor who
-    # has demonstrably mastered the required clinical protocol (track).
-    if slot.required_track_id:
+    # If the schedule requires a track certification, validate the doctor's
+    # post-test scores before allowing the assignment.
+    # The requirement lives on the schedule (whole week), not on individual slots:
+    # e.g. "ICU week of 2026-04-07 requires UTI Protocol track @ 80%."
+    required_track_id = schedule_response.data.get("required_track_id")
+    if required_track_id:
         _validate_doctor_credentials(
             db=db,
             doctor_id=str(slot.doctor_id),
-            track_id=str(slot.required_track_id),
+            track_id=required_track_id,
         )
     # ──────────────────────────────────────────────────────────────────────────
 
@@ -230,7 +231,6 @@ async def add_schedule_slot(
             "slot_date": slot.slot_date.isoformat(),
             "shift": slot.shift,
             "notes": slot.notes,
-            "required_track_id": str(slot.required_track_id) if slot.required_track_id else None,
         }).execute()
 
         if insert_response.data:
@@ -367,6 +367,62 @@ async def publish_schedule(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to publish schedule",
+        )
+
+
+@router.patch("/{schedule_id}/required-track")
+async def set_required_track(
+    schedule_id: UUID,
+    body: dict,
+    current_user: dict = Depends(get_current_user),
+    db: Client = Depends(get_db),
+):
+    """
+    Set (or clear) the track certification required for all slots in this schedule.
+
+    - **required_track_id**: Track UUID, or null to remove the requirement.
+
+    Once set, any doctor added to a slot in this schedule will be validated
+    against that track's required_score via the Credentialing Engine.
+    """
+    if current_user.get("role") != "manager":
+        raise HTTPException(status_code=403, detail="Only managers can configure credentialing")
+
+    schedule_resp = db.table("schedules").select("hospital_id").eq(
+        "id", str(schedule_id)
+    ).single().execute()
+
+    if not schedule_resp.data:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    if schedule_resp.data["hospital_id"] != current_user["hospital_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    track_id = body.get("required_track_id")
+
+    # Validate the track exists and belongs to this hospital (if provided)
+    if track_id:
+        track_resp = db.table("tracks").select("id, title").eq(
+            "id", track_id
+        ).eq("hospital_id", current_user["hospital_id"]).is_("deleted_at", "null").single().execute()
+
+        if not track_resp.data:
+            raise HTTPException(status_code=404, detail="Track not found in your hospital")
+
+    try:
+        db.table("schedules").update({
+            "required_track_id": track_id,
+        }).eq("id", str(schedule_id)).execute()
+
+        action = f"set to track {track_id}" if track_id else "cleared"
+        logger.info(f"Schedule {schedule_id} credentialing requirement {action}")
+        return {"schedule_id": str(schedule_id), "required_track_id": track_id}
+
+    except Exception as e:
+        logger.error(f"Error setting required track: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update credentialing requirement",
         )
 
 

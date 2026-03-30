@@ -19,19 +19,13 @@ class ScheduleSlotBase(BaseModel):
 
 class ScheduleSlotCreate(ScheduleSlotBase):
     """Create schedule slot"""
-    required_track_id: Optional[UUID] = Field(
-        None,
-        description="Track UUID whose certification is required for this slot. "
-                    "If set, the doctor must have passed all post-tests in the track "
-                    "with score >= tracks.required_score.",
-    )
+    pass
 
 
 class ScheduleSlotResponse(ScheduleSlotBase):
     """Schedule slot response"""
     id: UUID
     schedule_id: UUID
-    required_track_id: Optional[UUID] = None
     doctor_email: str = Field(..., description="Doctor email from join")
     created_at: datetime
 
@@ -54,6 +48,10 @@ class ScheduleResponse(ScheduleBase):
     id: UUID
     hospital_id: UUID
     status: str = Field(default="draft", description="'draft' | 'published'")
+    required_track_id: Optional[UUID] = Field(
+        None,
+        description="Track UUID whose certification is required for all slots in this schedule.",
+    )
     created_by: Optional[UUID] = None
     created_at: datetime
     updated_at: datetime
