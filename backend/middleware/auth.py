@@ -92,12 +92,20 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         Runs the sync Supabase client in a thread pool with a 3-second timeout
         to avoid blocking the event loop indefinitely if Supabase is slow.
         """
-        auth_header = request.headers.get("Authorization", "")
+        auth_header = request.headers.get("Authorization") or request.headers.get("authorization", "")
+        print(f"[DEBUG AUTH] Raw Authorization header received: '{auth_header[:30]}...' (length: {len(auth_header)})")
+        logger.info(f"[DEBUG AUTH] Raw Authorization header received: '{auth_header[:30]}...'")
+
         if not auth_header.startswith("Bearer "):
+            print("[DEBUG AUTH] Header does not start with 'Bearer '")
             return None
+        
         token = auth_header[7:]
         if not token:
+            print("[DEBUG AUTH] Token is empty after 'Bearer '")
             return None
+
+        print(f"[DEBUG AUTH] Token extracted successfully, length: {len(token)}")
 
         def _validate_sync() -> Optional[dict]:
             db = Database.get_client()

@@ -20,14 +20,18 @@ async function fetchApi<T>(
   const url = `${API_URL}${endpoint}`;
   try {
     const authHeaders = await getAuthHeaders();
+    const finalHeaders = {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+      ...options.headers,
+    };
+
+    console.log(`[DEBUG AUTH] Fetching ${url} with Authorization:`, !!(finalHeaders as any)['Authorization'] || !!(finalHeaders as any)['authorization']);
+
     const response = await fetch(url, {
       ...options,
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-        ...options.headers,
-      },
+      headers: finalHeaders,
     });
 
     if (!response.ok) {
@@ -56,8 +60,13 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
     if (isSupabaseConfigured()) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) {
+        console.log('[DEBUG AUTH] Token found in Supabase session. Length:', session.access_token.length);
         return { 'Authorization': `Bearer ${session.access_token}` };
+      } else {
+        console.log('[DEBUG AUTH] No access_token found in Supabase session');
       }
+    } else {
+      console.log('[DEBUG AUTH] Supabase is not configured');
     }
   } catch (e) {
     if (process.env.NODE_ENV !== 'production') {
@@ -303,10 +312,12 @@ export const uploadApi = {
   image: async (file: File): Promise<{ url: string; filename: string }> => {
     const formData = new FormData();
     formData.append('file', file);
+    const authHeaders = await getAuthHeaders();
 
     const response = await fetch(`${API_URL}/api/upload/image`, {
       method: 'POST',
       credentials: 'include',
+      headers: authHeaders,
       body: formData,
     });
 
@@ -321,10 +332,12 @@ export const uploadApi = {
   spreadsheet: async (file: File): Promise<any> => {
     const formData = new FormData();
     formData.append('file', file);
+    const authHeaders = await getAuthHeaders();
 
     const response = await fetch(`${API_URL}/api/upload/spreadsheet`, {
       method: 'POST',
       credentials: 'include',
+      headers: authHeaders,
       body: formData,
     });
 
