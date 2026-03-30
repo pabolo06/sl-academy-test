@@ -104,7 +104,7 @@ async def root():
     })
 
 # Import routers — fail-fast: missing module must never silently produce a broken app
-from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule, monitoring, cdss
+from api.routes import auth, tracks, lessons, questions, test_attempts, doubts, indicators, ai, upload, admin, youtube, schedule, monitoring, cdss, rostering
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(tracks.router, prefix="/api/tracks", tags=["Tracks"])
@@ -120,6 +120,7 @@ app.include_router(youtube.router, prefix="/api", tags=["YouTube"])
 app.include_router(schedule.router, tags=["Schedule"])
 app.include_router(monitoring.router)  # prefix="/api/monitoring" already set in router
 app.include_router(cdss.router)        # prefix="/api/cdss" already set in router
+app.include_router(rostering.router)   # prefix="/api/rostering" already set in router
 
 logger.info("All routers imported and registered successfully")
 
