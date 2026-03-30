@@ -33,6 +33,9 @@ pandas==2.1.4
 # AI Integration — CDSS / RAG (Phase 2)
 openai==1.57.0
 
+# Web scraping — Scrapling Watcher (Phase 4)
+scrapling==0.2.9
+
 # Validation & Sanitization
 # bleach removed (unused)
 
