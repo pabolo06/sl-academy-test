@@ -11,8 +11,10 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      // unsafe-inline required by Next.js hydration; unsafe-eval removed (not needed in production)
-      "script-src 'self' 'unsafe-inline'",
+      // unsafe-inline required by Next.js; unsafe-eval required in dev for HMR/React Fast Refresh
+      process.env.NODE_ENV === 'development'
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        : "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       `img-src 'self' data: blob: https://${SUPABASE_HOST}`,
