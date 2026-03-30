@@ -24,6 +24,95 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/schedule", tags=["schedule"])
 
 
+# ── CREDENTIALING ENGINE ───────────────────────────────────────────────────────
+
+def _validate_doctor_credentials(db: Client, doctor_id: str, track_id: str) -> None:
+    """
+    Validates that a doctor holds active certification for a given track.
+
+    Certification = best POST-test score on EVERY non-deleted lesson in the track
+                    must be >= the track's required_score.
+
+    Raises HTTP 403 with a structured, human-readable error if the doctor
+    does not meet the requirement.  Raises HTTP 404/422 on data anomalies.
+
+    This implements the Frappe LMS "active credentialing" pattern:
+    certification is tied to demonstrated test performance, not self-reporting.
+    """
+    # 1. Fetch track and its required_score
+    track_resp = db.table("tracks").select("title, required_score").eq(
+        "id", track_id
+    ).is_("deleted_at", "null").single().execute()
+
+    if not track_resp.data:
+        raise HTTPException(status_code=404, detail="Required track not found")
+
+    track_title: str = track_resp.data["title"]
+    required_score = track_resp.data.get("required_score")
+
+    # Track exists but has no score requirement — no credentialing needed
+    if required_score is None:
+        return
+
+    # 2. Fetch all active lessons in the track
+    lessons_resp = db.table("lessons").select("id, title").eq(
+        "track_id", track_id
+    ).is_("deleted_at", "null").execute()
+
+    if not lessons_resp.data:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Track '{track_title}' has no active lessons. "
+                   "Cannot validate credentialing.",
+        )
+
+    lesson_ids = [l["id"] for l in lessons_resp.data]
+    lesson_titles = {l["id"]: l["title"] for l in lessons_resp.data}
+
+    # 3. Fetch doctor's best POST-test score per lesson
+    attempts_resp = db.table("test_attempts").select(
+        "lesson_id, score"
+    ).eq("profile_id", doctor_id).eq(
+        "type", "post"
+    ).in_("lesson_id", lesson_ids).execute()
+
+    # Map lesson_id → best score achieved
+    best_scores: dict[str, float] = {}
+    for attempt in (attempts_resp.data or []):
+        lid = attempt["lesson_id"]
+        if lid not in best_scores or attempt["score"] > best_scores[lid]:
+            best_scores[lid] = float(attempt["score"])
+
+    # 4. Identify lessons where the doctor is not yet certified
+    failed: list[str] = []
+    for lid in lesson_ids:
+        score = best_scores.get(lid)
+        if score is None or score < float(required_score):
+            status_str = f"{score:.1f}%" if score is not None else "not attempted"
+            failed.append(f"  • {lesson_titles[lid]}: {status_str} (required: {required_score}%)")
+
+    if failed:
+        failed_list = "\n".join(failed)
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"Credentialing failed: Doctor has not met the minimum certification "
+                f"requirement of {required_score}% for track '{track_title}'.\n\n"
+                f"Uncertified lessons ({len(failed)}/{len(lesson_ids)}):\n{failed_list}\n\n"
+                "The doctor must complete the required post-tests before being "
+                "scheduled for this sector."
+            ),
+        )
+
+    logger.info(
+        f"Credentialing passed: doctor {doctor_id} certified for track '{track_title}' "
+        f"(required: {required_score}%, lessons: {len(lesson_ids)})"
+    )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+
+
 def get_week_start(date_obj: date) -> date:
     """Get Monday of the week containing date_obj"""
     weekday = date_obj.weekday()  # Monday = 0
@@ -120,6 +209,19 @@ async def add_schedule_slot(
     if schedule_response.data["hospital_id"] != current_user["hospital_id"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
+    # ── CREDENTIALING CHECK ────────────────────────────────────────────────────
+    # If the slot demands a track certification, validate the doctor's post-test
+    # scores before allowing the assignment.  This implements the Frappe LMS
+    # "active credentialing" pattern: a shift can only be filled by a doctor who
+    # has demonstrably mastered the required clinical protocol (track).
+    if slot.required_track_id:
+        _validate_doctor_credentials(
+            db=db,
+            doctor_id=str(slot.doctor_id),
+            track_id=str(slot.required_track_id),
+        )
+    # ──────────────────────────────────────────────────────────────────────────
+
     try:
         # Insert slot
         insert_response = db.table("schedule_slots").insert({
@@ -128,6 +230,7 @@ async def add_schedule_slot(
             "slot_date": slot.slot_date.isoformat(),
             "shift": slot.shift,
             "notes": slot.notes,
+            "required_track_id": str(slot.required_track_id) if slot.required_track_id else None,
         }).execute()
 
         if insert_response.data:
