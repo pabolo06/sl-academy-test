@@ -32,31 +32,31 @@ ALTER TABLE schedule_slots ENABLE ROW LEVEL SECURITY;
 -- RLS Policies for schedules
 CREATE POLICY "Users can view schedules from their hospital"
   ON schedules FOR SELECT
-  USING (hospital_id = auth.user_hospital_id());
+  USING (hospital_id = public.user_hospital_id());
 
 CREATE POLICY "Managers can create schedules"
   ON schedules FOR INSERT
   WITH CHECK (
-    hospital_id = auth.user_hospital_id() AND
-    auth.is_manager()
+    hospital_id = public.user_hospital_id() AND
+    public.is_manager()
   );
 
 CREATE POLICY "Managers can update schedules"
   ON schedules FOR UPDATE
   USING (
-    hospital_id = auth.user_hospital_id() AND
-    auth.is_manager()
+    hospital_id = public.user_hospital_id() AND
+    public.is_manager()
   )
   WITH CHECK (
-    hospital_id = auth.user_hospital_id() AND
-    auth.is_manager()
+    hospital_id = public.user_hospital_id() AND
+    public.is_manager()
   );
 
 CREATE POLICY "Managers can delete schedules"
   ON schedules FOR DELETE
   USING (
-    hospital_id = auth.user_hospital_id() AND
-    auth.is_manager()
+    hospital_id = public.user_hospital_id() AND
+    public.is_manager()
   );
 
 -- RLS Policies for schedule_slots
@@ -66,7 +66,7 @@ CREATE POLICY "Users can view slots from their hospital's schedules"
     EXISTS (
       SELECT 1 FROM schedules s
       WHERE s.id = schedule_slots.schedule_id
-      AND s.hospital_id = auth.user_hospital_id()
+      AND s.hospital_id = public.user_hospital_id()
     )
   );
 
@@ -76,8 +76,8 @@ CREATE POLICY "Managers can create slots"
     EXISTS (
       SELECT 1 FROM schedules s
       WHERE s.id = schedule_slots.schedule_id
-      AND s.hospital_id = auth.user_hospital_id()
-      AND auth.is_manager()
+      AND s.hospital_id = public.user_hospital_id()
+      AND public.is_manager()
     )
   );
 
@@ -87,8 +87,8 @@ CREATE POLICY "Managers can delete slots"
     EXISTS (
       SELECT 1 FROM schedules s
       WHERE s.id = schedule_slots.schedule_id
-      AND s.hospital_id = auth.user_hospital_id()
-      AND auth.is_manager()
+      AND s.hospital_id = public.user_hospital_id()
+      AND public.is_manager()
     )
   );
 
