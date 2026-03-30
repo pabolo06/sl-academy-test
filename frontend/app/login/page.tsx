@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
-  acceptTerms: z.boolean().refine((val) => val === true, {
-    message: 'Você deve aceitar os termos de uso',
-  }),
 });
 
 const registerSchema = z
@@ -55,7 +52,7 @@ function LoginPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [loginData, setLoginData] = useState({ email: '', password: '', acceptTerms: false });
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
 
   const [regData, setRegData] = useState({ name: '', email: '', password: '', confirmPassword: '', acceptTerms: false });
@@ -204,7 +201,7 @@ function LoginPageContent() {
           <div className="flex bg-white/5 rounded-lg p-1 mb-6 border border-white/[0.06]">
             <button
               type="button"
-              onClick={() => { setTab('login'); setApiError(''); setSuccessMsg(''); }}
+              onClick={() => { setTab('login'); setApiError(''); setSuccessMsg(''); setShowPassword(false); setShowConfirmPassword(false); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
                 tab === 'login'
                   ? 'bg-blue-600 text-white shadow-sm'
@@ -215,7 +212,7 @@ function LoginPageContent() {
             </button>
             <button
               type="button"
-              onClick={() => { setTab('register'); setApiError(''); setSuccessMsg(''); }}
+              onClick={() => { setTab('register'); setApiError(''); setSuccessMsg(''); setShowPassword(false); setShowConfirmPassword(false); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
                 tab === 'register'
                   ? 'bg-blue-600 text-white shadow-sm'
@@ -286,23 +283,6 @@ function LoginPageContent() {
                 </div>
                 <FieldError msg={loginErrors.password} />
               </div>
-
-              <div className="flex items-start gap-2.5">
-                <input
-                  id="loginTerms"
-                  type="checkbox"
-                  checked={loginData.acceptTerms}
-                  onChange={(e) => setLoginData({ ...loginData, acceptTerms: e.target.checked })}
-                  className="mt-0.5 h-4 w-4 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
-                />
-                <label htmlFor="loginTerms" className="text-xs text-slate-400 leading-relaxed cursor-pointer">
-                  Eu aceito os{' '}
-                  <a href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Termos de Serviço</a>
-                  {' '}e a{' '}
-                  <a href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Política de Privacidade</a>
-                </label>
-              </div>
-              <FieldError msg={loginErrors.acceptTerms} />
 
               <button
                 type="submit"
@@ -443,13 +423,21 @@ function LoginPageContent() {
           {/* Role switch */}
           <p className="mt-6 text-center text-xs text-slate-500">
             {isManager ? (
-              <a href="/login?role=doctor" className="text-slate-400 hover:text-blue-400 transition-colors">
+              <button
+                type="button"
+                onClick={() => router.push('/login?role=doctor')}
+                className="text-slate-400 hover:text-blue-400 transition-colors"
+              >
                 Acessar como Médico →
-              </a>
+              </button>
             ) : (
-              <a href="/login?role=manager" className="text-slate-400 hover:text-blue-400 transition-colors">
+              <button
+                type="button"
+                onClick={() => router.push('/login?role=manager')}
+                className="text-slate-400 hover:text-blue-400 transition-colors"
+              >
                 Acessar como Gestor →
-              </a>
+              </button>
             )}
           </p>
         </div>
