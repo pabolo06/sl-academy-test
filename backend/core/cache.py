@@ -128,6 +128,20 @@ async def invalidate_cache(pattern: str) -> None:
         logger.error(f"Cache invalidation error: {str(e)}")
 
 
+async def get_redis_client() -> Optional[redis.Redis]:
+    """
+    Get the Redis client instance for direct access (e.g., in tests).
+
+    Returns:
+        Redis client or None if unavailable
+    """
+    return await _get_redis()
+
+
+# Alias for backwards compatibility with tests
+redis_client = get_redis_client
+
+
 async def get_cache_stats() -> dict:
     """
     Get Redis cache statistics.
