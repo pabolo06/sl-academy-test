@@ -146,17 +146,23 @@ async def get_schedule(
             schedule = rows[0]
         else:
             # Create new schedule for this week
-            insert_resp = db.table("schedules").insert({
+            # supabase-py 2.x: insert() returns created rows via Prefer:return=representation
+            db.table("schedules").insert({
                 "hospital_id": current_user["hospital_id"],
                 "week_start": week_monday.isoformat(),
                 "created_by": current_user["user_id"],
-            }).select(
-                "*, schedule_slots(id, doctor_id, slot_date, shift, notes, created_at)"
-            ).execute()
+            }).execute()
 
-            created = insert_resp.data or []
+            # Fetch the newly created schedule (with slots relation)
+            fetch_resp = db.table("schedules").select(
+                "*, schedule_slots(id, doctor_id, slot_date, shift, notes, created_at)"
+            ).eq("hospital_id", current_user["hospital_id"]).eq(
+                "week_start", week_monday.isoformat()
+            ).limit(1).execute()
+
+            created = fetch_resp.data or []
             if not created:
-                raise ValueError("INSERT returned no data — check schedules table RLS/constraints")
+                raise ValueError("Schedule INSERT succeeded but SELECT returned nothing")
             schedule = created[0]
 
         # Enrich slots with doctor emails
