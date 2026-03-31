@@ -139,7 +139,7 @@ async def get_schedule(
             "*, schedule_slots(id, doctor_id, slot_date, shift, notes, created_at)"
         ).eq("hospital_id", current_user["hospital_id"]).eq(
             "week_start", week_monday.isoformat()
-        ).single().execute()
+        ).maybe_single().execute()
 
         if response.data:
             schedule = response.data
