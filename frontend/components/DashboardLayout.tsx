@@ -5,13 +5,18 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ProtectedRoute } from './ProtectedRoute';
 import AIAssistantButton from './AIAssistantButton';
 import MobileDrawer from './MobileDrawer';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import {
+  LayoutDashboard, BookOpen, Calendar, HelpCircle, Stethoscope,
+  Settings, MessageSquare, ArrowLeftRight, BarChart2, Activity,
+  Rss, Users, LogOut,
+} from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -19,60 +24,47 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps) {
-  const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const getDoctorDrawerItems = () => [
-    { icon: '👤', label: 'Meu Perfil', href: '/profile' },
-    { icon: '📖', label: 'Minhas Trilhas', href: '/tracks' },
-    { icon: '❓', label: 'Minhas Dúvidas', href: '/doubts' },
-    { icon: '📊', label: 'Meu Progresso', href: '/progress' },
-    { icon: '⚙️', label: 'Configurações', href: '/settings' },
-    { icon: '', label: '', divider: true },
-    {
-      icon: '🚪',
-      label: 'Logout',
-      onClick: () => {
-        localStorage.removeItem('auth_token');
-        router.push('/login');
-      },
-    },
+  const doctorItems = [
+    { icon: <LayoutDashboard size={18} />, label: 'Dashboard',        href: '/dashboard' },
+    { icon: <BookOpen size={18} />,        label: 'Trilhas',           href: '/tracks' },
+    { icon: <Calendar size={18} />,        label: 'Meus Plantões',     href: '/shifts' },
+    { icon: <HelpCircle size={18} />,      label: 'Minhas Dúvidas',    href: '/doubts' },
+    { icon: <Stethoscope size={18} />,     label: 'Suporte Clínico',   href: '/cdss' },
+    { divider: true },
+    { icon: <LogOut size={18} />,          label: 'Sair',              onClick: logout },
   ];
 
-  const getManagerDrawerItems = () => [
-    { icon: '👤', label: 'Meu Perfil', href: '/profile' },
-    { icon: '📊', label: 'Dashboard', href: '/manager/dashboard' },
-    { icon: '👥', label: 'Minha Equipe', href: '/manager/team' },
-    { icon: '📅', label: 'Escala de Plantões', href: '/manager/schedule' },
-    { icon: '📈', label: 'Indicadores', href: '/manager/indicators' },
-    { icon: '⚙️', label: 'Configurações', href: '/settings' },
-    { icon: '', label: '', divider: true },
-    {
-      icon: '🚪',
-      label: 'Logout',
-      onClick: () => {
-        localStorage.removeItem('auth_token');
-        router.push('/login');
-      },
-    },
+  const managerItems = [
+    { icon: <LayoutDashboard size={18} />, label: 'Dashboard',             href: '/manager/dashboard' },
+    { icon: <Settings size={18} />,        label: 'Gerenciar Trilhas',      href: '/manager/tracks' },
+    { icon: <MessageSquare size={18} />,   label: 'Gerenciar Dúvidas',      href: '/manager/doubts' },
+    { icon: <Calendar size={18} />,        label: 'Escala de Plantões',     href: '/manager/schedule' },
+    { icon: <ArrowLeftRight size={18} />,  label: 'Rostering IA',           href: '/manager/rostering' },
+    { icon: <BarChart2 size={18} />,       label: 'Indicadores',            href: '/manager/indicators' },
+    { icon: <Activity size={18} />,        label: 'Saúde Ocupacional',      href: '/manager/occupational' },
+    { icon: <Rss size={18} />,             label: 'Monitor de Diretrizes',  href: '/manager/watcher' },
+    { icon: <Users size={18} />,           label: 'Utilizadores',           href: '/manager/users' },
+    { divider: true },
+    { icon: <LogOut size={18} />,          label: 'Sair',                   onClick: logout },
   ];
 
-  const drawerItems =
-    user?.role === 'doctor'
-      ? getDoctorDrawerItems()
-      : getManagerDrawerItems();
+  const drawerItems = user?.role === 'doctor' ? doctorItems : managerItems;
+  const drawerTitle = user?.role === 'doctor' ? 'Área do Médico' : 'Painel Gerencial';
 
   return (
     <ProtectedRoute requiredRole={requiredRole}>
       <div className="flex min-h-screen bg-[#0a0e1a]">
-        {/* Desktop Sidebar - Hidden on mobile */}
+        {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden md:flex md:flex-shrink-0">
           <Sidebar />
         </div>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col">
-          <Header />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header onMenuOpen={() => setMobileMenuOpen(true)} />
           <main className="flex-1 overflow-auto p-4 sm:p-6">
             {children}
           </main>
@@ -85,8 +77,9 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
       {/* Mobile Navigation Drawer */}
       <MobileDrawer
         items={drawerItems}
-        title={user?.role === 'doctor' ? 'Médico' : 'Gestor'}
-        isAuthenticated={!!user}
+        title={drawerTitle}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
       />
     </ProtectedRoute>
   );

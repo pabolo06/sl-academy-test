@@ -1,46 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Stethoscope, BarChart3, MessageSquare, Info, HelpCircle, Shield, Mail } from 'lucide-react';
+import { ChevronRight, Stethoscope, BarChart3, MessageSquare, Menu, FileText, Lock, LogIn } from 'lucide-react';
 import MobileDrawer from '@/components/MobileDrawer';
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const drawerItems = [
-    {
-      icon: '🏥',
-      label: 'Sobre SL Academy',
-      href: '#about',
-    },
-    {
-      icon: '📚',
-      label: 'Como Funciona',
-      href: '#features',
-    },
-    {
-      icon: '🔐',
-      label: 'Segurança de Dados',
-      href: '#security',
-    },
-    {
-      icon: '📞',
-      label: 'Suporte',
-      href: '#support',
-    },
-    {
-      icon: '',
-      label: '',
-      divider: true,
-    },
-    {
-      icon: '⚖️',
-      label: 'Termos',
-      href: '/terms',
-    },
-    {
-      icon: '🔒',
-      label: 'Privacidade',
-      href: '/privacy',
-    },
+    { icon: <LogIn size={18} />,   label: 'Entrar como Médico',  href: '/login?role=doctor' },
+    { icon: <LogIn size={18} />,   label: 'Entrar como Gestor',  href: '/login?role=manager' },
+    { divider: true },
+    { icon: <FileText size={18} />, label: 'Termos de Uso',      href: '/terms' },
+    { icon: <Lock size={18} />,     label: 'Privacidade',        href: '/privacy' },
   ];
 
   const features = [
@@ -70,7 +43,21 @@ export default function Home() {
   return (
     <main className="relative flex min-h-screen flex-col bg-[#0a0e1a] overflow-hidden">
       {/* Mobile Drawer */}
-      <MobileDrawer items={drawerItems} title="SL Academy" />
+      <MobileDrawer
+        items={drawerItems}
+        title="SL Academy"
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
+
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setMobileMenuOpen(true)}
+        className="fixed top-4 right-4 z-50 md:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition"
+        aria-label="Abrir menu"
+      >
+        <Menu size={22} />
+      </button>
 
       {/* Animated Background Gradient */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
