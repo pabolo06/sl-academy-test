@@ -134,26 +134,30 @@ async def get_schedule(
         week_date = datetime.strptime(week_start, "%Y-%m-%d").date()
         week_monday = get_week_start(week_date)
 
-        # Fetch or create schedule
-        response = db.table("schedules").select(
+        # Fetch existing schedule (list query — avoids single()/maybe_single() 406 edge cases)
+        select_resp = db.table("schedules").select(
             "*, schedule_slots(id, doctor_id, slot_date, shift, notes, created_at)"
         ).eq("hospital_id", current_user["hospital_id"]).eq(
             "week_start", week_monday.isoformat()
-        ).maybe_single().execute()
+        ).limit(1).execute()
 
-        if response.data:
-            schedule = response.data
+        rows = select_resp.data or []
+        if rows:
+            schedule = rows[0]
         else:
             # Create new schedule for this week
-            insert_response = db.table("schedules").insert({
+            insert_resp = db.table("schedules").insert({
                 "hospital_id": current_user["hospital_id"],
                 "week_start": week_monday.isoformat(),
                 "created_by": current_user["user_id"],
             }).select(
                 "*, schedule_slots(id, doctor_id, slot_date, shift, notes, created_at)"
-            ).single().execute()
+            ).execute()
 
-            schedule = insert_response.data
+            created = insert_resp.data or []
+            if not created:
+                raise ValueError("INSERT returned no data — check schedules table RLS/constraints")
+            schedule = created[0]
 
         # Enrich slots with doctor emails
         if schedule.get("schedule_slots"):

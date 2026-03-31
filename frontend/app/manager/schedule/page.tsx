@@ -12,9 +12,12 @@ export default function SchedulePage() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [weekStart, setWeekStart] = useState<Date>(() => {
     const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
-    return new Date(today.setDate(diff));
+    const dayOfWeek = today.getDay(); // 0=Sun … 6=Sat
+    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + daysToMonday);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +27,11 @@ export default function SchedulePage() {
     setIsLoading(true);
     setError(null);
     try {
-      const weekStartStr = weekStart.toISOString().split('T')[0];
+      // Use local date parts to avoid UTC offset shifting the day
+      const y = weekStart.getFullYear();
+      const m = String(weekStart.getMonth() + 1).padStart(2, '0');
+      const d = String(weekStart.getDate()).padStart(2, '0');
+      const weekStartStr = `${y}-${m}-${d}`;
       const data = await scheduleApi.getSchedule(weekStartStr);
       setSchedule(data);
     } catch (err: any) {
@@ -109,9 +116,15 @@ export default function SchedulePage() {
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex gap-3">
             <AlertCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-red-900 dark:text-red-300">Erro</p>
-              <p className="text-red-800 dark:text-red-400 text-sm">{error}</p>
+            <div className="flex-1">
+              <p className="font-semibold text-red-900 dark:text-red-300">Erro ao carregar escala</p>
+              <p className="text-red-800 dark:text-red-400 text-sm mt-0.5">{error}</p>
+              <button
+                onClick={loadSchedule}
+                className="mt-2 text-sm font-medium text-red-700 dark:text-red-300 underline hover:no-underline"
+              >
+                Tentar novamente
+              </button>
             </div>
           </div>
         )}
