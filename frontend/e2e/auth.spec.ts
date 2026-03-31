@@ -2,15 +2,13 @@ import { test, expect, Page } from '@playwright/test'
 
 /**
  * Helper: fill a React-controlled input reliably.
- * React's synthetic onChange fires on the native `input` event.
- * Playwright's `fill` sometimes skips it — `pressSequentially` fires all
- * key events so React always receives the update.
+ * Uses triple-click to select all existing text, then types the new value.
+ * `fill()` dispatches the `input` event properly for React controlled inputs.
  */
 async function reactFill(page: Page, selector: string, value: string) {
   const loc = page.locator(selector)
-  await loc.click({ force: true })
-  await loc.clear()
-  await loc.pressSequentially(value, { delay: 30 })
+  await loc.click({ clickCount: 3, force: true })
+  await loc.fill(value)
 }
 
 test.describe('Authentication — Login Tab', () => {
