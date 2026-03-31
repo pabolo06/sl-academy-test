@@ -33,8 +33,31 @@ export default function SchedulePage() {
       const m = String(weekStart.getMonth() + 1).padStart(2, '0');
       const d = String(weekStart.getDate()).padStart(2, '0');
       const weekStartStr = `${y}-${m}-${d}`;
-      const data = await scheduleApi.getSchedule(weekStartStr);
-      setSchedule(data);
+
+      try {
+        // Network first
+        const data = await scheduleApi.getSchedule(weekStartStr);
+        setSchedule(data);
+
+        // Cache for offline use (SSR guard)
+        if (typeof window !== 'undefined') {
+          import('@/lib/offlineDb').then(({ cacheSchedule }) => {
+            cacheSchedule(weekStartStr, data).catch(() => { });
+          });
+        }
+      } catch (networkErr: any) {
+        // Fallback to IndexedDB cache when offline
+        if (typeof window !== 'undefined') {
+          const { getCachedSchedule } = await import('@/lib/offlineDb');
+          const cached = await getCachedSchedule(weekStartStr, 24 * 60 * 60 * 1000); // 24h cache for offline
+          if (cached) {
+            setSchedule(cached);
+            setError('Modo offline — dados em cache. Reconecte para atualizar.');
+            return;
+          }
+        }
+        throw networkErr;
+      }
     } catch (err: any) {
       const msg = err.message || 'Erro ao carregar escala';
       setError(msg);
