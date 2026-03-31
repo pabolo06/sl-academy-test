@@ -363,6 +363,11 @@ export const occupationalApi = {
     fetchApi<{ tasks: MicroLearningTask[]; count: number }>(
       `/api/occupational/micro-learning?task_status=${taskStatus}`
     ),
+  runMicroLearningScan: () =>
+    fetchApi<{ status: string; doctors_checked: number; tasks_created: number }>(
+      '/api/occupational/scan/micro-learning',
+      { method: 'POST' }
+    ),
 };
 
 // Watcher API
