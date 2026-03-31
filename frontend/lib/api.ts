@@ -359,9 +359,9 @@ export const occupationalApi = {
       '/api/occupational/scan/burnout',
       { method: 'POST' }
     ),
-  getMicroLearning: (status = 'pending') =>
+  getMicroLearning: (taskStatus = 'pending') =>
     fetchApi<{ tasks: MicroLearningTask[]; count: number }>(
-      `/api/occupational/micro-learning?status=${status}`
+      `/api/occupational/micro-learning?task_status=${taskStatus}`
     ),
 };
 

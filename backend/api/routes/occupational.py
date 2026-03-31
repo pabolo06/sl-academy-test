@@ -114,14 +114,14 @@ async def run_burnout_scan(
 
 @router.get("/micro-learning")
 async def list_micro_learning_tasks(
-    status: str = "pending",
+    task_status: str = "pending",
     current_user: dict = Depends(get_current_user),
     db: Client = Depends(get_db),
 ):
     """
     List micro-learning recertification tasks for the current hospital.
     Query params:
-      - status=pending (default), passed, failed
+      - task_status=pending (default), passed, failed
     """
     hospital_id = current_user["hospital_id"]
 
@@ -132,7 +132,7 @@ async def list_micro_learning_tasks(
             "profiles(email), tracks(title)"
         )
         .eq("hospital_id", hospital_id)
-        .eq("status", status)
+        .eq("status", task_status)
         .order("due_date", desc=False)
         .limit(50)
         .execute()

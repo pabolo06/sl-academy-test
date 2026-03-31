@@ -116,11 +116,17 @@ async def get_doubts(
     """
     try:
         # Build query based on role
-        query = db.table("doubts").select("*").is_("deleted_at", "null")
+        query = db.table("doubts").select(
+            "*, lessons!inner(track_id, tracks!inner(hospital_id))"
+        ).is_("deleted_at", "null")
         
-        # Doctors see only their own doubts
+        # RBAC + hospital isolation
         if current_user["role"] == "doctor":
+            # Doctors see only their own doubts
             query = query.eq("profile_id", current_user["user_id"])
+        
+        # Hospital isolation: all users only see doubts from their hospital
+        query = query.eq("lessons.tracks.hospital_id", current_user["hospital_id"])
         
         # Filter by status if provided
         if status_filter:

@@ -336,7 +336,7 @@ async def publish_schedule(
         raise HTTPException(status_code=403, detail="Only managers can publish schedules")
 
     # Verify schedule belongs to user's hospital
-    schedule_response = db.table("schedules").select("hospital_id").eq(
+    schedule_response = db.table("schedules").select("hospital_id, status").eq(
         "id", str(schedule_id)
     ).single().execute()
 
@@ -345,6 +345,13 @@ async def publish_schedule(
 
     if schedule_response.data["hospital_id"] != current_user["hospital_id"]:
         raise HTTPException(status_code=403, detail="Access denied")
+
+    # Guard: prevent re-publishing
+    if schedule_response.data.get("status") == "published":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Escala já está publicada.",
+        )
 
     try:
         update_response = db.table("schedules").update({
