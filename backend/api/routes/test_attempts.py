@@ -100,14 +100,15 @@ def submit_test_attempt(
             f"by {current_user['email']} - Score: {test_score.score}"
         )
         
+        row = response.data[0]
         return TestAttemptResponse(
-            id=UUID(response.data[0]["id"]),
-            profile_id=UUID(response.data[0]["profile_id"]),
-            lesson_id=UUID(response.data[0]["lesson_id"]),
+            id=UUID(row["id"]),
+            profile_id=UUID(row["profile_id"]),
+            lesson_id=UUID(row["lesson_id"]),
             type=attempt.type,
             score=test_score.score,
             answers=answers_dict,
-            created_at=response.data[0]["created_at"]
+            created_at=row.get("created_at") or row.get("started_at") or ""
         )
     
     except HTTPException:
@@ -138,7 +139,7 @@ def get_lesson_attempts(
         response = db.table("test_attempts").select("*").eq(
             "lesson_id", str(lesson_id)
         ).eq("profile_id", current_user["user_id"]).order(
-            "created_at", desc=True
+            "started_at", desc=True
         ).execute()
 
         attempts = []
@@ -167,7 +168,11 @@ def get_lesson_attempts(
                 type=attempt_type,
                 score=float(attempt_data.get("score") or 0),
                 answers=answers_dict,
-                created_at=attempt_data["created_at"]
+                created_at=(
+                    attempt_data.get("created_at")
+                    or attempt_data.get("started_at")
+                    or ""
+                )
             ))
 
         return attempts
