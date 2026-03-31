@@ -41,9 +41,9 @@ async def create_doubt(
         # Verify lesson exists and belongs to user's hospital
         lesson_response = db.table("lessons").select(
             "id, track_id, tracks(hospital_id)"
-        ).eq("id", str(doubt.lesson_id)).is_("deleted_at", "null").single().execute()
-        
-        if not lesson_response.data:
+        ).eq("id", str(doubt.lesson_id)).is_("deleted_at", "null").limit(1).execute()
+
+        if not (lesson_response.data or []):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Lesson not found"
@@ -167,9 +167,9 @@ async def answer_doubt(
         # Verify doubt exists and belongs to user's hospital
         doubt_response = db.table("doubts").select("id, status").eq(
             "id", str(doubt_id)
-        ).is_("deleted_at", "null").single().execute()
-        
-        if not doubt_response.data:
+        ).is_("deleted_at", "null").limit(1).execute()
+
+        if not (doubt_response.data or []):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Doubt not found"

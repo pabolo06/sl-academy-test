@@ -331,56 +331,65 @@ async def publish_schedule(
 
     - **schedule_id**: Schedule UUID
     """
-    # Verify user is manager
+    # Verify user is manager — read role safely from session (never from request body)
     if current_user.get("role") != "manager":
         raise HTTPException(status_code=403, detail="Only managers can publish schedules")
 
-    # Verify schedule belongs to user's hospital
-    schedule_response = db.table("schedules").select("hospital_id, status").eq(
-        "id", str(schedule_id)
-    ).single().execute()
-
-    if not schedule_response.data:
-        raise HTTPException(status_code=404, detail="Schedule not found")
-
-    if schedule_response.data["hospital_id"] != current_user["hospital_id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
-
-    # Guard: prevent re-publishing
-    if schedule_response.data.get("status") == "published":
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Escala já está publicada.",
-        )
-
     try:
+        # Use limit(1) instead of single() to avoid PostgrestAPIError on no-match
+        select_resp = db.table("schedules").select("id, hospital_id, status").eq(
+            "id", str(schedule_id)
+        ).limit(1).execute()
+
+        rows = select_resp.data or []
+        if not rows:
+            raise HTTPException(status_code=404, detail="Schedule not found")
+
+        schedule_data = rows[0]
+
+        # Hospital isolation — session-injected hospital_id is the source of truth
+        if schedule_data["hospital_id"] != current_user["hospital_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+
+        # Guard: prevent re-publishing an already-published schedule
+        if schedule_data.get("status") == "published":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Escala já está publicada.",
+            )
+
         update_response = db.table("schedules").update({
             "status": "published"
         }).eq("id", str(schedule_id)).select(
             "*, schedule_slots(id, doctor_id, slot_date, shift, notes, created_at)"
-        ).single().execute()
+        ).limit(1).execute()
 
-        if update_response.data:
-            schedule = update_response.data
+        updated_rows = update_response.data or []
+        if not updated_rows:
+            raise HTTPException(status_code=404, detail="Schedule not found after update")
 
-            # Enrich slots with doctor emails
-            if schedule.get("schedule_slots"):
-                doctor_ids = [slot["doctor_id"] for slot in schedule["schedule_slots"]]
-                doctors_response = db.table("profiles").select("id, email").in_(
-                    "id", doctor_ids
-                ).execute()
-                doctor_map = {doc["id"]: doc["email"] for doc in doctors_response.data}
+        schedule = updated_rows[0]
 
-                for slot in schedule["schedule_slots"]:
-                    slot["doctor_email"] = doctor_map.get(slot["doctor_id"], "")
+        # Enrich slots with doctor emails
+        if schedule.get("schedule_slots"):
+            doctor_ids = [slot["doctor_id"] for slot in schedule["schedule_slots"]]
+            doctors_response = db.table("profiles").select("id, email").in_(
+                "id", doctor_ids
+            ).execute()
+            doctor_map = {doc["id"]: doc["email"] for doc in (doctors_response.data or [])}
 
-            logger.info(f"Published schedule {schedule_id}")
-            return schedule
-        else:
-            raise HTTPException(status_code=404, detail="Schedule not found")
+            for slot in schedule["schedule_slots"]:
+                slot["doctor_email"] = doctor_map.get(slot["doctor_id"], "")
 
+        logger.info(
+            f"Published schedule {schedule_id} by manager {current_user['user_id']}"
+        )
+        return schedule
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error publishing schedule: {str(e)}")
+        logger.error(f"Error publishing schedule {schedule_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to publish schedule",
