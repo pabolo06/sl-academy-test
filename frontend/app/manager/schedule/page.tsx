@@ -20,6 +20,7 @@ export default function SchedulePage() {
     return monday;
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -64,20 +65,22 @@ export default function SchedulePage() {
   };
 
   const handlePublishSchedule = async () => {
-    if (!schedule) return;
+    if (!schedule || isPublishing) return;
 
     setError(null);
     setSuccessMessage(null);
+    setIsPublishing(true);
 
     try {
       const updated = await scheduleApi.publishSchedule(schedule.id);
       setSchedule(updated);
-      setSuccessMessage('Escala publicada com sucesso!');
-      setTimeout(() => setSuccessMessage(null), 5000);
+      setSuccessMessage('Escala publicada com sucesso! Os médicos já podem visualizar seus plantões.');
+      setTimeout(() => setSuccessMessage(null), 8000);
     } catch (err: any) {
       const msg = err.message || 'Erro ao publicar escala';
       setError(msg);
-      console.error('Erro ao publicar escala:', err);
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -153,11 +156,17 @@ export default function SchedulePage() {
           <div className="mb-6 flex justify-end">
             <button
               onClick={handlePublishSchedule}
-              disabled={isLoading}
+              disabled={isLoading || isPublishing}
               className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
             >
-              {isLoading && <Loader size={16} className="animate-spin" />}
-              Publicar Escala
+              {isPublishing ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  Publicando…
+                </>
+              ) : (
+                'Publicar Escala'
+              )}
             </button>
           </div>
         )}

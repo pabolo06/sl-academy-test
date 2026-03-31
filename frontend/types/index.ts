@@ -242,3 +242,89 @@ export interface VideoProgress {
   last_position: number;
   updated_at: string;
 }
+
+// Occupational Health Types
+export type RiskLevel = 'high' | 'medium' | 'low';
+
+export interface OccupationalAlert {
+  id: string;
+  doctor_id: string;
+  hospital_id: string;
+  risk_level: RiskLevel;
+  triggers: string[];
+  is_acknowledged: boolean;
+  created_at: string;
+  profiles?: { email: string };
+}
+
+export interface MicroLearningTask {
+  id: string;
+  doctor_id: string;
+  track_id: string;
+  hospital_id: string;
+  status: 'pending' | 'passed' | 'failed';
+  due_date: string;
+  created_at: string;
+  profiles?: { email: string };
+  tracks?: { title: string };
+}
+
+// Watcher / Clinical Alert Types
+export type AlertSeverity = 'high' | 'medium' | 'low' | 'info';
+
+export interface WatcherAlert {
+  id: string;
+  hospital_id: string;
+  track_id?: string;
+  source: string;
+  title: string;
+  url?: string;
+  summary?: string;
+  severity: AlertSeverity;
+  is_read: boolean;
+  created_at: string;
+}
+
+// Shift Swap Types
+export type SwapStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ShiftSwapRequest {
+  id: string;
+  hospital_id: string;
+  requester_id: string;
+  target_id: string;
+  slot_id: string;
+  reason?: string;
+  status: SwapStatus;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  created_at: string;
+}
+
+export interface RosteringChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface RosteringChatResponse {
+  reply: string;
+  tool_calls_made: string[];
+  swap_created: boolean;
+}
+
+// CDSS (Clinical Decision Support) Types
+export interface CdssCitation {
+  lesson_id: string;
+  title: string;
+  track_title: string;
+  similarity: number;
+}
+
+export type CdssConfidence = 'high' | 'medium' | 'low' | 'no_context' | 'unavailable' | 'error';
+
+export interface CdssResponse {
+  answer: string;
+  citations: CdssCitation[];
+  confidence: CdssConfidence;
+  sources_found: number;
+}

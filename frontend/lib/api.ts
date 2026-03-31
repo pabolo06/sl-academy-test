@@ -3,7 +3,7 @@
  * Centralized API calls with error handling
  */
 
-import { Track, Lesson, LessonDetail, Question, TestAttemptCreate, TestAttempt, Doubt, DoubtCreate, Indicator, RecommendationRequest, RecommendationResponse, AssistantRequest, AssistantResponse, Schedule, ScheduleSlotCreate, ScheduleSlot } from '@/types';
+import { Track, Lesson, LessonDetail, Question, TestAttemptCreate, TestAttempt, Doubt, DoubtCreate, Indicator, RecommendationRequest, RecommendationResponse, AssistantRequest, AssistantResponse, Schedule, ScheduleSlotCreate, ScheduleSlot, OccupationalAlert, MicroLearningTask, WatcherAlert, ShiftSwapRequest, RosteringChatMessage, RosteringChatResponse, CdssResponse } from '@/types';
 import { API_URL } from './config';
 
 class ApiError extends Error {
@@ -341,6 +341,86 @@ export const uploadApi = {
 
     return response.json();
   },
+};
+
+// Occupational Health API
+export const occupationalApi = {
+  getAlerts: (acknowledged = false) =>
+    fetchApi<{ alerts: OccupationalAlert[]; count: number }>(
+      `/api/occupational/alerts?acknowledged=${acknowledged}`
+    ),
+  acknowledgeAlert: (alertId: string) =>
+    fetchApi<{ status: string; alert_id: string }>(
+      `/api/occupational/alerts/${alertId}/acknowledge`,
+      { method: 'PATCH' }
+    ),
+  runBurnoutScan: () =>
+    fetchApi<{ status: string; doctors_scanned: number; alerts_created: number }>(
+      '/api/occupational/scan/burnout',
+      { method: 'POST' }
+    ),
+  getMicroLearning: (status = 'pending') =>
+    fetchApi<{ tasks: MicroLearningTask[]; count: number }>(
+      `/api/occupational/micro-learning?status=${status}`
+    ),
+};
+
+// Watcher API
+export const watcherApi = {
+  getAlerts: (params?: { unreadOnly?: boolean; severity?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.unreadOnly) q.append('unread_only', 'true');
+    if (params?.severity) q.append('severity', params.severity);
+    return fetchApi<WatcherAlert[]>(`/api/watcher/alerts${q.toString() ? '?' + q.toString() : ''}`);
+  },
+  markRead: (alertId: string) =>
+    fetchApi<{ alert_id: string; is_read: boolean }>(
+      `/api/watcher/alerts/${alertId}/read`,
+      { method: 'PATCH' }
+    ),
+  deleteAlert: (alertId: string) =>
+    fetchApi<void>(`/api/watcher/alerts/${alertId}`, { method: 'DELETE' }),
+  triggerCheck: (data: { track_id: string; search_term: string; sources?: string[] }) =>
+    fetchApi<{ alerts_created: number; alerts: any[]; errors: any[] }>(
+      '/api/watcher/check',
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
+};
+
+// Rostering API
+export const rosteringApi = {
+  chat: (messages: RosteringChatMessage[]) =>
+    fetchApi<RosteringChatResponse>('/api/rostering/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    }),
+  getSwaps: (status?: string) => {
+    const q = status ? `?status=${status}` : '';
+    return fetchApi<ShiftSwapRequest[]>(`/api/rostering/swaps${q}`);
+  },
+  approveSwap: (swapId: string) =>
+    fetchApi<{ swap_id: string; status: string }>(
+      `/api/rostering/swaps/${swapId}/approve`,
+      { method: 'PATCH' }
+    ),
+  rejectSwap: (swapId: string) =>
+    fetchApi<{ swap_id: string; status: string }>(
+      `/api/rostering/swaps/${swapId}/reject`,
+      { method: 'PATCH' }
+    ),
+};
+
+// CDSS API
+export const cdssApi = {
+  ask: (question: string, chatHistory: RosteringChatMessage[] = []) =>
+    fetchApi<CdssResponse>('/api/cdss/ask', {
+      method: 'POST',
+      body: JSON.stringify({ question, top_k: 5, chat_history: chatHistory }),
+    }),
+  embedAll: () =>
+    fetchApi<{ embedded: number; errors: number }>('/api/cdss/embed-all', {
+      method: 'POST',
+    }),
 };
 
 export { ApiError };

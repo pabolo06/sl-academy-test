@@ -59,15 +59,56 @@ const IconCalendar = () => (
   </svg>
 );
 
+const IconHeart = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+  </svg>
+);
+
+const IconRss = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 00-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+  </svg>
+);
+
+const IconArrows = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+  </svg>
+);
+
+const IconStethoscope = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+  </svg>
+);
+
+const IconClipboard = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+  </svg>
+);
+
 const menuItems: MenuItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: <IconGrid /> },
-  { label: 'Trilhas', href: '/tracks', icon: <IconBook /> },
-  { label: 'Minhas Dúvidas', href: '/doubts', icon: <IconHelpCircle />, roles: ['doctor'] },
-  { label: 'Gerenciar Dúvidas', href: '/manager/doubts', icon: <IconMessage />, roles: ['manager'] },
-  { label: 'Gerenciar Trilhas', href: '/manager/tracks', icon: <IconSettings />, roles: ['manager'] },
-  { label: 'Escala de Plantões', href: '/manager/schedule', icon: <IconCalendar />, roles: ['manager'] },
-  { label: 'Indicadores', href: '/manager/indicators', icon: <IconBarChart />, roles: ['manager'] },
-  { label: 'Dashboard Gerencial', href: '/manager/dashboard', icon: <IconDashboard />, roles: ['manager'] },
+  // ── Shared ──────────────────────────────────────────────────────────────────
+  { label: 'Dashboard',            href: '/dashboard',              icon: <IconGrid /> },
+  { label: 'Trilhas',              href: '/tracks',                 icon: <IconBook /> },
+
+  // ── Doctor only ─────────────────────────────────────────────────────────────
+  { label: 'Meus Plantões',        href: '/shifts',                 icon: <IconCalendar />,    roles: ['doctor'] },
+  { label: 'Minhas Dúvidas',       href: '/doubts',                 icon: <IconHelpCircle />,  roles: ['doctor'] },
+  { label: 'Suporte Clínico',      href: '/cdss',                   icon: <IconStethoscope />, roles: ['doctor'] },
+
+  // ── Manager only ─────────────────────────────────────────────────────────────
+  { label: 'Dashboard Gerencial',  href: '/manager/dashboard',      icon: <IconDashboard />,   roles: ['manager'] },
+  { label: 'Gerenciar Trilhas',    href: '/manager/tracks',         icon: <IconSettings />,    roles: ['manager'] },
+  { label: 'Gerenciar Dúvidas',    href: '/manager/doubts',         icon: <IconMessage />,     roles: ['manager'] },
+  { label: 'Escala de Plantões',   href: '/manager/schedule',       icon: <IconCalendar />,    roles: ['manager'] },
+  { label: 'Rostering IA',         href: '/manager/rostering',      icon: <IconArrows />,      roles: ['manager'] },
+  { label: 'Indicadores',          href: '/manager/indicators',     icon: <IconBarChart />,    roles: ['manager'] },
+  { label: 'Saúde Ocupacional',    href: '/manager/occupational',   icon: <IconHeart />,       roles: ['manager'] },
+  { label: 'Monitor de Diretrizes',href: '/manager/watcher',        icon: <IconRss />,         roles: ['manager'] },
+  { label: 'Utilizadores',         href: '/manager/users',          icon: <IconClipboard />,   roles: ['manager'] },
 ];
 
 function getInitials(email: string): string {
