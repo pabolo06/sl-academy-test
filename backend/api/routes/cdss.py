@@ -78,18 +78,24 @@ class TaskStatusResponse(BaseModel):
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
-@router.post("/ask", response_model=CDSSResponse)
+@router.post(
+    "/ask",
+    response_model=TaskAccepted,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def ask_clinical_question(
     body: ClinicalQuestion,
     current_user: dict = Depends(get_current_user),
 ):
     """
-    Ask a clinical question and receive a RAG-grounded answer citing internal protocols.
+    Queue a clinical question for background RAG processing (async, 202 Accepted).
 
-    The CDSS:
-    1. Embeds the question using text-embedding-3-small
-    2. Retrieves the most semantically similar lessons/POPs from this hospital
-    3. Generates a grounded answer citing each source by name
+    The CDSS worker will:
+    1. Embed the question using text-embedding-3-small
+    2. Retrieve the most semantically similar lessons/POPs from this hospital
+    3. Generate a grounded answer citing each source by name
+
+    Poll the result via GET /api/cdss/tasks/{task_id}.
 
     Rate limited to 10 questions per minute per user.
     Returns safe fallback if OpenAI is not configured.
@@ -107,14 +113,19 @@ async def ask_clinical_question(
             headers={"Retry-After": str(retry_after)},
         )
 
-    result = await cdss_service.ask(
-        question=body.question,
-        hospital_id=current_user["hospital_id"],
-        top_k=body.top_k,
-        chat_history=body.chat_history or None,
-    )
+    from tasks.ai_tasks import cdss_ask_task
 
-    return CDSSResponse(**result)
+    task = cdss_ask_task.delay(
+        body.question,
+        current_user["hospital_id"],
+        body.top_k,
+        body.chat_history or None,
+    )
+    logger.info(
+        f"Queued CDSS ask task {task.id} for hospital {current_user['hospital_id']} "
+        f"(user: {current_user['user_id']})"
+    )
+    return TaskAccepted(task_id=task.id)
 
 
 @router.post(

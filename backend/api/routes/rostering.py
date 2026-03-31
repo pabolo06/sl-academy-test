@@ -18,7 +18,6 @@ from datetime import datetime
 from utils.session import get_current_user
 from middleware.auth import require_role
 from core.database import get_db
-from services.ai_rostering import ai_rostering_service
 from utils.rate_limiter import rate_limiter
 from supabase import Client
 import logging
@@ -61,21 +60,37 @@ class SwapRequestResponse(BaseModel):
     created_at: datetime
 
 
+class TaskAccepted(BaseModel):
+    task_id: str
+    status: str = "PENDING"
+    message: str = "Task queued for background processing."
+
+
+class TaskStatusResponse(BaseModel):
+    task_id: str
+    status: str
+    result: Optional[dict] = None
+    error: Optional[str] = None
+
+
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post(
+    "/chat",
+    response_model=TaskAccepted,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def rostering_chat(
     body: ChatRequest,
     current_user: dict = Depends(get_current_user),
 ):
     """
-    Conversational shift management powered by AI function calling.
+    Queue a rostering chat turn for background processing (async, 202 Accepted).
 
-    The AI can:
-    - Look up the doctor's schedule
-    - Find available doctors for a given date/shift
-    - Create shift swap requests (pending manager approval)
-    - List the doctor's existing swap requests
+    The AI worker will run the function-calling loop (up to 5 iterations) and
+    produce a natural-language reply plus any swap requests created.
+
+    Poll the result via GET /api/rostering/tasks/{task_id}.
 
     Rate limited to 20 messages per hour per user.
     Returns safe fallback if OPENAI_API_KEY is not configured.
@@ -92,12 +107,53 @@ async def rostering_chat(
             headers={"Retry-After": str(retry_after)},
         )
 
-    result = await ai_rostering_service.chat(
-        messages=[m.model_dump() for m in body.messages],
-        hospital_id=current_user["hospital_id"],
-        requester_id=current_user["user_id"],
+    from tasks.ai_tasks import rostering_chat_task
+
+    task = rostering_chat_task.delay(
+        [m.model_dump() for m in body.messages],
+        current_user["hospital_id"],
+        current_user["user_id"],
     )
-    return ChatResponse(**result)
+    logger.info(
+        f"Queued rostering chat task {task.id} for hospital {current_user['hospital_id']} "
+        f"(user: {current_user['user_id']})"
+    )
+    return TaskAccepted(task_id=task.id)
+
+
+@router.get("/tasks/{task_id}", response_model=TaskStatusResponse)
+async def get_rostering_task_status(
+    task_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Poll the status of a background rostering task.
+
+    Possible statuses:
+    - PENDING:    Task is waiting in the queue
+    - PROCESSING: Task is actively running (function-calling loop in progress)
+    - SUCCESS:    Task completed — ChatResponse payload in 'result' field
+    - FAILURE:    Task failed — error message in 'error' field
+    - RETRY:      Task is being retried after transient error
+    """
+    from celery.result import AsyncResult
+    from core.celery_app import celery_app
+
+    result = AsyncResult(task_id, app=celery_app)
+    response = TaskStatusResponse(task_id=task_id, status=result.status)
+
+    if result.ready():
+        if result.successful():
+            response.result = result.result
+        else:
+            try:
+                response.error = str(result.result)
+            except Exception:
+                response.error = "Unknown error occurred."
+    elif result.status == "PROCESSING":
+        response.result = result.info if isinstance(result.info, dict) else None
+
+    return response
 
 
 @router.get("/swaps", response_model=List[SwapRequestResponse])
