@@ -5,36 +5,33 @@ Endpoints for managing burnout alerts and micro-learning tasks.
 All endpoints enforce hospital_id isolation via session validation.
 """
 
-from fastapi import APIRouter, Request, HTTPException
-from pydantic import BaseModel
-from core.database import Database
+from fastapi import APIRouter, Depends, HTTPException
+from core.database import get_db
 from services.burnout_analyzer import burnout_analyzer
 from services.micro_learning_service import micro_learning_service
+from utils.session import get_current_user
+from supabase import Client
 
 router = APIRouter(prefix="/api/occupational", tags=["Occupational Health"])
-
-
-# ── Request Models ─────────────────────────────────────────────────────────────
-
-class AcknowledgeRequest(BaseModel):
-    """Body for PATCH /alerts/{id}/acknowledge."""
-    pass  # no body needed — the alert_id comes from the path
 
 
 # ── Burnout Alerts ─────────────────────────────────────────────────────────────
 
 @router.get("/alerts")
-async def list_burnout_alerts(request: Request, acknowledged: bool = False):
+async def list_burnout_alerts(
+    acknowledged: bool = False,
+    current_user: dict = Depends(get_current_user),
+    db: Client = Depends(get_db),
+):
     """
     List burnout alerts for the current hospital.
     Query params:
       - acknowledged=false (default): active/unread alerts
       - acknowledged=true: already acknowledged alerts
     """
-    hospital_id = request.state.hospital_id
+    hospital_id = current_user["hospital_id"]
 
-    db = Database.get_client()
-    query = (
+    resp = (
         db.table("burnout_alerts")
         .select(
             "id, doctor_id, risk_level, triggers, is_acknowledged, created_at, "
@@ -44,8 +41,8 @@ async def list_burnout_alerts(request: Request, acknowledged: bool = False):
         .eq("is_acknowledged", acknowledged)
         .order("created_at", desc=True)
         .limit(50)
+        .execute()
     )
-    resp = query.execute()
 
     return {
         "alerts": resp.data or [],
@@ -54,20 +51,21 @@ async def list_burnout_alerts(request: Request, acknowledged: bool = False):
 
 
 @router.patch("/alerts/{alert_id}/acknowledge")
-async def acknowledge_alert(request: Request, alert_id: str):
+async def acknowledge_alert(
+    alert_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Client = Depends(get_db),
+):
     """
     Mark a burnout alert as acknowledged (read) by the manager.
     Does NOT modify any schedule data — purely informational state change.
     """
-    hospital_id = request.state.hospital_id
-    role = request.state.role
+    hospital_id = current_user["hospital_id"]
+    role = current_user["role"]
 
     if role != "manager":
         raise HTTPException(status_code=403, detail="Apenas gestores podem reconhecer alertas.")
 
-    db = Database.get_client()
-
-    # Verify the alert belongs to this hospital
     alert_resp = (
         db.table("burnout_alerts")
         .select("id")
@@ -89,13 +87,15 @@ async def acknowledge_alert(request: Request, alert_id: str):
 # ── Burnout Scan ───────────────────────────────────────────────────────────────
 
 @router.post("/scan/burnout")
-async def run_burnout_scan(request: Request):
+async def run_burnout_scan(
+    current_user: dict = Depends(get_current_user),
+):
     """
     Trigger a hospital-wide burnout scan.
     Manager-only — analyses all doctors and creates alerts as needed.
     """
-    hospital_id = request.state.hospital_id
-    role = request.state.role
+    hospital_id = current_user["hospital_id"]
+    role = current_user["role"]
 
     if role != "manager":
         raise HTTPException(status_code=403, detail="Apenas gestores podem executar análises.")
@@ -113,15 +113,18 @@ async def run_burnout_scan(request: Request):
 # ── Micro-Learning ─────────────────────────────────────────────────────────────
 
 @router.get("/micro-learning")
-async def list_micro_learning_tasks(request: Request, status: str = "pending"):
+async def list_micro_learning_tasks(
+    status: str = "pending",
+    current_user: dict = Depends(get_current_user),
+    db: Client = Depends(get_db),
+):
     """
     List micro-learning recertification tasks for the current hospital.
     Query params:
       - status=pending (default), passed, failed
     """
-    hospital_id = request.state.hospital_id
+    hospital_id = current_user["hospital_id"]
 
-    db = Database.get_client()
     resp = (
         db.table("micro_learning_tasks")
         .select(
@@ -142,13 +145,15 @@ async def list_micro_learning_tasks(request: Request, status: str = "pending"):
 
 
 @router.post("/scan/micro-learning")
-async def run_micro_learning_scan(request: Request):
+async def run_micro_learning_scan(
+    current_user: dict = Depends(get_current_user),
+):
     """
     Trigger micro-learning task generation for expired certifications.
     Manager-only.
     """
-    hospital_id = request.state.hospital_id
-    role = request.state.role
+    hospital_id = current_user["hospital_id"]
+    role = current_user["role"]
 
     if role != "manager":
         raise HTTPException(status_code=403, detail="Apenas gestores podem executar análises.")

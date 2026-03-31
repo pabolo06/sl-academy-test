@@ -128,33 +128,52 @@ def get_lesson_attempts(
 ):
     """
     Get user's test attempts for a lesson
-    
+
     Returns only current user's attempts
     Automatically filtered by profile_id
     """
+    import json as _json
+
     try:
         response = db.table("test_attempts").select("*").eq(
             "lesson_id", str(lesson_id)
         ).eq("profile_id", current_user["user_id"]).order(
             "created_at", desc=True
         ).execute()
-        
+
         attempts = []
         for attempt_data in response.data:
-            answers_dict = attempt_data["answers"]
-            
+            # answers may be a JSONB dict, a JSON string, or None depending on
+            # the Supabase driver version and how the record was originally stored.
+            raw_answers = attempt_data.get("answers") or {}
+            if isinstance(raw_answers, str):
+                try:
+                    raw_answers = _json.loads(raw_answers)
+                except (ValueError, TypeError):
+                    raw_answers = {}
+            # Ensure values are ints (JSONB numbers sometimes come back as floats)
+            answers_dict: dict = {
+                str(k): int(v)
+                for k, v in raw_answers.items()
+                if v is not None
+            }
+
+            attempt_type = attempt_data.get("type") or "pre"
+
             attempts.append(TestAttemptResponse(
                 id=UUID(attempt_data["id"]),
                 profile_id=UUID(attempt_data["profile_id"]),
                 lesson_id=UUID(attempt_data["lesson_id"]),
-                type=attempt_data["type"],
-                score=attempt_data["score"],
+                type=attempt_type,
+                score=float(attempt_data.get("score") or 0),
                 answers=answers_dict,
                 created_at=attempt_data["created_at"]
             ))
-        
+
         return attempts
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching test attempts for lesson {lesson_id}: {str(e)}")
         raise HTTPException(
