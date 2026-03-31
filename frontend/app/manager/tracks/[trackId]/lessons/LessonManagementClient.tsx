@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { trackApi, lessonApi } from '@/lib/api';
@@ -45,6 +45,12 @@ export default function LessonManagementClient() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+    // Video upload state
+    const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!trackId) return;
@@ -99,10 +105,96 @@ export default function LessonManagementClient() {
         setError(null);
     };
 
+    const uploadVideoToSupabase = async (file: File): Promise<string> => {
+        if (!isSupabaseConfigured()) {
+            throw new Error('Supabase não está configurado. Configure as variáveis de ambiente.');
+        }
+
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+        const fileName = `${trackId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+            // Use XHR for upload progress tracking
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) throw new Error('Sessão expirada. Faça login novamente.');
+
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const uploadUrl = `${supabaseUrl}/storage/v1/object/videos/${fileName}`;
+
+            await new Promise<void>((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', uploadUrl);
+                xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+                xhr.setRequestHeader('x-upsert', 'true');
+
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const pct = Math.round((event.loaded / event.total) * 100);
+                        setUploadProgress(pct);
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve();
+                    } else {
+                        reject(new Error(`Upload falhou: ${xhr.statusText}`));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error('Erro de rede durante upload'));
+                xhr.send(file);
+            });
+
+            // Get signed URL for the uploaded video
+            const { data: signedData, error: signError } = await supabase.storage
+                .from('videos')
+                .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year
+
+            if (signError || !signedData?.signedUrl) {
+                // Fallback to public URL if signing fails
+                const { data: publicData } = supabase.storage
+                    .from('videos')
+                    .getPublicUrl(fileName);
+                return publicData.publicUrl;
+            }
+
+            return signedData.signedUrl;
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        const validTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+        if (!validTypes.includes(file.type)) {
+            setError('Formato inválido. Use .mp4, .webm ou .ogg');
+            return;
+        }
+
+        // Validate file size (max 500MB)
+        if (file.size > 500 * 1024 * 1024) {
+            setError('Ficheiro muito grande. Máximo: 500MB');
+            return;
+        }
+
+        setVideoFile(file);
+        setError(null);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.title.trim()) { setError('Título é obrigatório'); return; }
-        if (!formData.video_url.trim()) { setError('URL do vídeo é obrigatória'); return; }
+        if (!editingLesson && !videoFile && !formData.video_url.trim()) {
+            setError('Selecione um ficheiro de vídeo ou insira uma URL'); return;
+        }
         if (formData.duration_seconds <= 0) { setError('Duração deve ser maior que zero'); return; }
 
         const duplicate = lessons.find(l => l.position === formData.position && l.id !== editingLesson?.id);
@@ -111,11 +203,17 @@ export default function LessonManagementClient() {
         setIsSubmitting(true);
         setError(null);
         try {
+            // Upload video if a new file was selected
+            let videoUrl = formData.video_url;
+            if (videoFile) {
+                videoUrl = await uploadVideoToSupabase(videoFile);
+            }
+
             const lessonData = {
                 track_id: String(trackId),
                 title: formData.title.trim(),
                 description: formData.description?.trim() || '',
-                video_url: formData.video_url.trim(),
+                video_url: videoUrl.trim(),
                 duration_seconds: Number(formData.duration_seconds),
                 position: Number(formData.position),
             };
@@ -129,6 +227,8 @@ export default function LessonManagementClient() {
             setShowForm(false);
             setFormData({ title: '', description: '', video_url: '', duration_seconds: 0, position: 0 });
             setEditingLesson(null);
+            setVideoFile(null);
+            setUploadProgress(0);
             fetchTrackAndLessons();
             setTimeout(() => setSuccessMsg(null), 3000);
         } catch (err: any) {
@@ -247,16 +347,76 @@ export default function LessonManagementClient() {
                             </div>
 
                             <div>
-                                <label htmlFor="video_url" className="form-label">URL do Vídeo *</label>
-                                <input
-                                    id="video_url"
-                                    type="url"
-                                    value={formData.video_url}
-                                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                                    className="form-input"
-                                    placeholder="https://www.youtube.com/watch?v=..."
-                                    disabled={isSubmitting}
-                                />
+                                <label className="form-label">Vídeo da Aula *</label>
+
+                                {/* Upload zone */}
+                                <div
+                                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${videoFile
+                                            ? 'border-emerald-500/40 bg-emerald-500/5'
+                                            : 'border-white/10 hover:border-blue-500/40 hover:bg-blue-500/5'
+                                        }`}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="video/mp4,video/webm,video/ogg"
+                                        onChange={handleVideoFileChange}
+                                        className="hidden"
+                                        disabled={isSubmitting || isUploading}
+                                    />
+
+                                    {videoFile ? (
+                                        <div className="space-y-2">
+                                            <p className="text-sm text-emerald-400 font-medium">
+                                                ✓ {videoFile.name}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                {(videoFile.size / (1024 * 1024)).toFixed(1)} MB
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <svg className="w-8 h-8 mx-auto text-slate-500" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                            </svg>
+                                            <p className="text-sm text-slate-400">Clique para selecionar .mp4, .webm ou .ogg</p>
+                                            <p className="text-xs text-slate-600">Máximo: 500MB</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Upload Progress Bar */}
+                                {isUploading && (
+                                    <div className="mt-3 space-y-1">
+                                        <div className="flex justify-between text-xs text-slate-400">
+                                            <span>Enviando vídeo...</span>
+                                            <span>{uploadProgress}%</span>
+                                        </div>
+                                        <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                                                style={{ width: `${uploadProgress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Fallback: URL manual */}
+                                {!videoFile && (
+                                    <div className="mt-3">
+                                        <label htmlFor="video_url" className="block text-xs text-slate-500 mb-1">Ou insira uma URL directa:</label>
+                                        <input
+                                            id="video_url"
+                                            type="url"
+                                            value={formData.video_url}
+                                            onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                                            className="form-input"
+                                            placeholder="https://storage.example.com/video.mp4"
+                                            disabled={isSubmitting}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
