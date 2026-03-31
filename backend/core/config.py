@@ -78,6 +78,11 @@ class Settings(BaseSettings):
 
     # Redis / Cache
     redis_url: str = Field(default="", env="REDIS_URL")
+
+    # Celery (Async Task Queue)
+    celery_broker_url: str = Field(default="redis://localhost:6379/0", env="CELERY_BROKER_URL")
+    celery_result_backend: str = Field(default="redis://localhost:6379/1", env="CELERY_RESULT_BACKEND")
+
     cache_ttl_default: int = Field(default=300, env="CACHE_TTL_DEFAULT")
     cache_ttl_lessons: int = Field(default=600, env="CACHE_TTL_LESSONS")
     cache_ttl_indicators: int = Field(default=300, env="CACHE_TTL_INDICATORS")

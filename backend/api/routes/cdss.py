@@ -3,12 +3,14 @@ SL Academy Platform - CDSS Routes (Clinical Decision Support System)
 Phase 2: RAG-based clinical Q&A over hospital protocols (POPs).
 
 Endpoints:
-  POST /api/cdss/ask              — doctor asks a clinical question
-  POST /api/cdss/embed/{lesson_id} — manager embeds a specific lesson
-  POST /api/cdss/embed-all        — manager embeds all unembedded lessons
+  POST /api/cdss/ask              — doctor asks a clinical question (sync)
+  POST /api/cdss/embed/{lesson_id} — manager queues embedding for a lesson (async, 202)
+  POST /api/cdss/embed-all        — manager queues bulk embedding (async, 202)
+  GET  /api/cdss/tasks/{task_id}  — poll task status
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Any, Dict, List, Optional
 from uuid import UUID
@@ -61,10 +63,17 @@ class CDSSResponse(BaseModel):
     sources_found: int
 
 
-class EmbedResult(BaseModel):
-    lesson_id: Optional[str] = None
+class TaskAccepted(BaseModel):
+    task_id: str
+    status: str = "PENDING"
+    message: str = "Task queued for background processing."
+
+
+class TaskStatusResponse(BaseModel):
+    task_id: str
     status: str
-    message: Optional[str] = None
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -108,49 +117,99 @@ async def ask_clinical_question(
     return CDSSResponse(**result)
 
 
-@router.post("/embed/{lesson_id}", response_model=EmbedResult)
+@router.post(
+    "/embed/{lesson_id}",
+    response_model=TaskAccepted,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def embed_lesson(
     lesson_id: UUID,
     current_user: dict = Depends(require_role("manager")),
 ):
     """
-    Generate and store the vector embedding for a specific lesson (manager only).
+    Queue embedding generation for a specific lesson (manager only).
 
+    Returns 202 Accepted with a task_id for polling via GET /api/cdss/tasks/{task_id}.
     Idempotent — safe to call multiple times.
-    Requires OPENAI_API_KEY to be configured.
     """
-    result = await cdss_service.embed_lesson(str(lesson_id))
+    from tasks.ai_tasks import embed_single_lesson_task
 
-    if result["status"] == "error":
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=result.get("message", "Failed to embed lesson."),
-        )
+    task = embed_single_lesson_task.delay(str(lesson_id))
+    logger.info(
+        f"Queued embed task {task.id} for lesson {lesson_id} "
+        f"(manager: {current_user['user_id']})"
+    )
+    return TaskAccepted(task_id=task.id)
 
-    return EmbedResult(**result)
 
-
-@router.post("/embed-all")
+@router.post(
+    "/embed-all",
+    response_model=TaskAccepted,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def embed_all_lessons(
     current_user: dict = Depends(require_role("manager")),
 ):
     """
-    Embed all lessons in this hospital that don't yet have a vector (manager only).
+    Queue bulk embedding of all unembedded lessons for this hospital (manager only).
 
-    Runs synchronously — for large hospitals consider running this off-peak.
-    Returns a summary: {"embedded": N, "errors": N}
+    Returns 202 Accepted with a task_id for polling via GET /api/cdss/tasks/{task_id}.
+    The task runs in background with a 10-minute time limit.
     """
-    result = await cdss_service.embed_all_lessons(
-        hospital_id=current_user["hospital_id"]
-    )
-
-    if result.get("status") == "disabled":
+    # Check if CDSS is enabled before wasting a Celery slot
+    if not cdss_service.is_enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=result.get("message", "CDSS not configured."),
+            detail="CDSS not configured: OPENAI_API_KEY is not set.",
         )
 
+    from tasks.ai_tasks import embed_all_lessons_task
+
+    task = embed_all_lessons_task.delay(current_user["hospital_id"])
     logger.info(
-        f"Bulk embed completed for hospital {current_user['hospital_id']}: {result}"
+        f"Queued bulk embed task {task.id} for hospital {current_user['hospital_id']} "
+        f"(manager: {current_user['user_id']})"
     )
-    return result
+    return TaskAccepted(task_id=task.id)
+
+
+@router.get("/tasks/{task_id}", response_model=TaskStatusResponse)
+async def get_task_status(
+    task_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Poll the status of a background Celery task.
+
+    Possible statuses:
+    - PENDING: Task is waiting in the queue
+    - PROCESSING: Task is actively running
+    - SUCCESS: Task completed successfully (result in 'result' field)
+    - FAILURE: Task failed (error message in 'error' field)
+    - RETRY: Task is being retried
+    """
+    from celery.result import AsyncResult
+    from core.celery_app import celery_app
+
+    result = AsyncResult(task_id, app=celery_app)
+
+    response = TaskStatusResponse(
+        task_id=task_id,
+        status=result.status,
+    )
+
+    if result.ready():
+        if result.successful():
+            response.result = result.result
+        else:
+            # Task failed — extract error message safely
+            try:
+                response.error = str(result.result)
+            except Exception:
+                response.error = "Unknown error occurred."
+
+    elif result.status == "PROCESSING":
+        # Custom state set by update_state() in the task
+        response.result = result.info if isinstance(result.info, dict) else None
+
+    return response

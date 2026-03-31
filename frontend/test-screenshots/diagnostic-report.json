@@ -1,0 +1,1040 @@
+[
+  {
+    "role": "manager",
+    "path": "/manager/dashboard",
+    "currentUrl": "https://sl-academy.vercel.app/manager/dashboard",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Dashboard Gerencial",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteDashboard GerencialHospital TesteGestorgestor@teste.comSair0Indicadores2Trilhas2Aulas0Testes RealizadosDesempenho em TestesMédia Pré-teste0.0%Média Pós-teste0.0%Melhoria Média+0.0%A",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 ()",
+      "Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "consoleWarnings": [],
+    "networkErrors": [
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/63651119-e100-4b19-bf5e-5edbabb35028/attempts",
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/72de25b8-400d-4b31-9d3d-2e8b7a629e60/attempts"
+    ],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 3,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_dashboard.png"
+  },
+  {
+    "role": "manager",
+    "path": "/manager/schedule",
+    "currentUrl": "https://sl-academy.vercel.app/manager/schedule",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Escala de Plantões",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteEscala de PlantõesHospital TesteGestorgestor@teste.comSairEscala de PlantõesOrganize os médicos plantonistas por dia e turnoSemana de 30/03/2026 a 05/04/2026Publicar EscalaTurnoSeg2",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 6,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_schedule.png"
+  },
+  {
+    "role": "manager",
+    "path": "/manager/rostering",
+    "currentUrl": "https://sl-academy.vercel.app/manager/rostering",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Rostering IA",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteRostering IAHospital TesteGestorgestor@teste.comSairRostering InteligenteGerencie trocas de turno e consulte o assistente IA para suporte na escalaçãoTrocas de TurnoAssistente IASta",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 6,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_rostering.png"
+  },
+  {
+    "role": "manager",
+    "path": "/manager/occupational",
+    "currentUrl": "https://sl-academy.vercel.app/manager/occupational",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Saúde Ocupacional",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteSaúde OcupacionalHospital TesteGestorgestor@teste.comSairSaúde OcupacionalMonitoramento de burnout e micro-aprendizado da equipe médicaAnalisar HospitalFailed to fetch0Alto Risco0Al",
+    "consoleErrors": [
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/micro-learning?status=pending' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=false' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=true' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 7,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_occupational.png"
+  },
+  {
+    "role": "manager",
+    "path": "/manager/watcher",
+    "currentUrl": "https://sl-academy.vercel.app/manager/watcher",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Monitor de Diretrizes",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteMonitor de DiretrizesHospital TesteGestorgestor@teste.comSairMonitor de DiretrizesAlertas clínicos sobre atualizações em protocolos médicosVerificar AtualizaçõesApenas não lidos Sev",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 5,
+        "blocked": 0,
+        "blockedDetails": []
+      },
+      {
+        "label": "input",
+        "visible": 1,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_watcher.png"
+  },
+  {
+    "role": "manager",
+    "path": "/manager/tracks",
+    "currentUrl": "https://sl-academy.vercel.app/manager/tracks",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Gerenciar Trilhas",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteGerenciar TrilhasHospital TesteGestorgestor@teste.comSairGerenciar TrilhasCrie e organize trilhas de aprendizadoNova Trilhateste teste0 aulasAulasEditarExcluirteste0 aulasAulasEdita",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 8,
+        "blocked": 0,
+        "blockedDetails": []
+      },
+      {
+        "label": "link",
+        "visible": 2,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_tracks.png"
+  },
+  {
+    "role": "manager",
+    "path": "/manager/doubts",
+    "currentUrl": "https://sl-academy.vercel.app/manager/doubts",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Gerenciar Dúvidas",
+    "bodySnippet": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteGerenciar DúvidasHospital TesteGestorgestor@teste.comSairGerenciar DúvidasVisualize e responda dúvidas dos médicosAtualizar1Total1Pendentes0RespondidasFiltrar por AulaTodas as aulas",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 5,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Dashboard Gerencial",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/manager/dashboard"
+      },
+      {
+        "text": "Gerenciar Trilhas",
+        "href": "/manager/tracks"
+      },
+      {
+        "text": "Gerenciar Dúvidas",
+        "href": "/manager/doubts"
+      },
+      {
+        "text": "Escala de Plantões",
+        "href": "/manager/schedule"
+      },
+      {
+        "text": "Rostering IA",
+        "href": "/manager/rostering"
+      },
+      {
+        "text": "Indicadores",
+        "href": "/manager/indicators"
+      },
+      {
+        "text": "Saúde Ocupacional",
+        "href": "/manager/occupational"
+      },
+      {
+        "text": "Monitor de Diretrizes",
+        "href": "/manager/watcher"
+      },
+      {
+        "text": "Utilizadores",
+        "href": "/manager/users"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\manager_manager_doubts.png"
+  },
+  {
+    "role": "doctor",
+    "path": "/dashboard",
+    "currentUrl": "https://sl-academy.vercel.app/dashboard",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Dashboard",
+    "bodySnippet": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteDashboardHospital TesteMédicomedico@teste.comSairBem-vindo de voltamedicoHospital Teste · MédicoPerfilmedico@teste.comMédicoHospitalHospital TesteAtivoProgresso0%0/2 aulasAcesso RápidoTrilhas de AprendizadoExplore conteúdo disponívelMinhas DúvidasPerguntas e respostasSeus Plantões Est",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 ()",
+      "Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "consoleWarnings": [],
+    "networkErrors": [
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/72de25b8-400d-4b31-9d3d-2e8b7a629e60/attempts",
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/63651119-e100-4b19-bf5e-5edbabb35028/attempts"
+    ],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 3,
+        "blocked": 0,
+        "blockedDetails": []
+      },
+      {
+        "label": "link",
+        "visible": 1,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\doctor_dashboard.png"
+  },
+  {
+    "role": "doctor",
+    "path": "/shifts",
+    "currentUrl": "https://sl-academy.vercel.app/shifts",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Meus Plantões",
+    "bodySnippet": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteMeus PlantõesHospital TesteMédicomedico@teste.comSairMeus PlantõesSeus turnos escalados nesta semanaAtualizarSolicitar TrocaNenhum plantão escalado esta semanaAguarde a publicação da escala pelo gestor(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])self.__next_",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 5,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\doctor_shifts.png"
+  },
+  {
+    "role": "doctor",
+    "path": "/cdss",
+    "currentUrl": "https://sl-academy.vercel.app/cdss",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Suporte Clínico",
+    "bodySnippet": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteSuporte ClínicoHospital TesteMédicomedico@teste.comSairSuporte ClínicoConsultas baseadas nos protocolos do seu hospitalAviso: Este sistema fornece informações baseadas nos protocolos internos do hospital. Não substitui o julgamento clínico. Sempre verifique com a equipe médica em situ",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 7,
+        "blocked": 0,
+        "blockedDetails": []
+      },
+      {
+        "label": "input",
+        "visible": 1,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\doctor_cdss.png"
+  },
+  {
+    "role": "doctor",
+    "path": "/doubts",
+    "currentUrl": "https://sl-academy.vercel.app/doubts",
+    "redirected": false,
+    "pageTitle": "SL Academy Platform",
+    "h1Text": "Minhas Dúvidas",
+    "bodySnippet": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteMinhas DúvidasHospital TesteMédicomedico@teste.comSairMinhas DúvidasGerencie suas dúvidas sobre as aulasNova Dúvida1Total1Pendentes0RespondidasStatusTodasPendentesRespondidasAulaTodas as aulastesteTeste CorreçãoPendente18/03/2026, 18:03teste teste(self.__next_f=self.__next_f||[]).push",
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "networkErrors": [],
+    "visibleErrors": [],
+    "overlays": [],
+    "clickTests": [
+      {
+        "label": "button",
+        "visible": 4,
+        "blocked": 0,
+        "blockedDetails": []
+      }
+    ],
+    "navItems": [
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      },
+      {
+        "text": "Dashboard",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Trilhas",
+        "href": "/tracks"
+      },
+      {
+        "text": "Meus Plantões",
+        "href": "/shifts"
+      },
+      {
+        "text": "Minhas Dúvidas",
+        "href": "/doubts"
+      },
+      {
+        "text": "Suporte Clínico",
+        "href": "/cdss"
+      }
+    ],
+    "screenshotPath": "C:\\Users\\pablo\\OneDrive\\Documentos\\Oslo\\frontend\\test-screenshots\\doctor_doubts.png"
+  }
+]

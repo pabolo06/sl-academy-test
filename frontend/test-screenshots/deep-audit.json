@@ -1,0 +1,1122 @@
+{
+  "manager:/manager/dashboard": {
+    "pagePath": "/manager/dashboard",
+    "consoleErrs": [
+      "Failed to load resource: the server responded with a status of 500 ()",
+      "Failed to load resource: the server responded with a status of 500 ()",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/micro-learning?status=pending' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=false' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=true' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "netFiltered": [
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/63651119-e100-4b19-bf5e-5edbabb35028/attempts",
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/72de25b8-400d-4b31-9d3d-2e8b7a629e60/attempts"
+    ],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteDashboard GerencialHospital TesteGestorgestor@teste.comSair0Indicadores2Trilhas2Aulas0Testes RealizadosDesempenho em TestesMédia Pré-teste0.0%Média Pós-teste0.0%Melhoria Média+0.0%Ações RápidasImportar IndicadoresUpload CSV / XLSXGerenciar DúvidasResponder perguntasGerenciar Trilh"
+    }
+  },
+  "manager:/manager/schedule": {
+    "pagePath": "/manager/schedule",
+    "consoleErrs": [
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/micro-learning?status=pending' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=false' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=true' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 p-3 font-semibold",
+          "z": 0,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 71,
+            "h": 105,
+            "t": 486,
+            "l": 33,
+            "r": 104,
+            "b": 591
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 p-3 font-semibold",
+          "z": 0,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 71,
+            "h": 105,
+            "t": 591,
+            "l": 33,
+            "r": 104,
+            "b": 696
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 p-3 font-semibold",
+          "z": 0,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 71,
+            "h": 105,
+            "t": 696,
+            "l": 33,
+            "r": 104,
+            "b": 801
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteEscala de PlantõesHospital TesteGestorgestor@teste.comSairEscala de PlantõesOrganize os médicos plantonistas por dia e turnoSemana de 30/03/2026 a 05/04/2026Publicar EscalaTurnoSeg29/3Ter30/3Qua31/3Qui1/4Sex2/4Sab3/4Dom4/4Manhã (06:00 - 14:00)Tarde (14:00 - 22:00)Noite (22:00 - 06"
+    }
+  },
+  "manager:/manager/rostering": {
+    "pagePath": "/manager/rostering",
+    "consoleErrs": [
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/micro-learning?status=pending' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=false' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=true' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteRostering IAHospital TesteGestorgestor@teste.comSairRostering InteligenteGerencie trocas de turno e consulte o assistente IA para suporte na escalaçãoTrocas de TurnoAssistente IAStatus:TodosPendentesAprovadosRejeitadosAtualizarNenhuma solicitação de troca encontrada(self.__next_f="
+    }
+  },
+  "manager:/manager/occupational": {
+    "pagePath": "/manager/occupational",
+    "consoleErrs": [
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/micro-learning?status=pending' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=false' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED",
+      "Access to fetch at 'https://web-production-e40b7.up.railway.app/api/occupational/alerts?acknowledged=true' from origin 'https://sl-academy.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteSaúde OcupacionalHospital TesteGestorgestor@teste.comSairSaúde OcupacionalMonitoramento de burnout e micro-aprendizado da equipe médicaAnalisar HospitalFailed to fetch0Alto Risco0Alertas Ativos0Tarefas PendentesAlertas Ativos (0)Reconhecidos (0)Micro-Aprendizado (0)Nenhum alerta a"
+    }
+  },
+  "manager:/manager/watcher": {
+    "pagePath": "/manager/watcher",
+    "consoleErrs": [],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteMonitor de DiretrizesHospital TesteGestorgestor@teste.comSairMonitor de DiretrizesAlertas clínicos sobre atualizações em protocolos médicosVerificar AtualizaçõesApenas não lidos Severidade:TodasAltaMédiaBaixaInfoAtualizarNenhum alerta clínico encontradoUse \"Verificar Atualizações\""
+    }
+  },
+  "manager:/manager/tracks": {
+    "pagePath": "/manager/tracks",
+    "consoleErrs": [],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteGerenciar TrilhasHospital TesteGestorgestor@teste.comSairGerenciar TrilhasCrie e organize trilhas de aprendizadoNova Trilhateste teste0 aulasAulasEditarExcluirteste0 aulasAulasEditarExcluir(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])self.__next_f.push(["
+    }
+  },
+  "manager:/manager/doubts": {
+    "pagePath": "/manager/doubts",
+    "consoleErrs": [],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyPainel GerencialDashboardTrilhasDashboard GerencialGerenciar TrilhasGerenciar DúvidasEscala de PlantõesRostering IAIndicadoresSaúde OcupacionalMonitor de DiretrizesUtilizadoresGEgestor@teste.comHospital TesteGerenciar DúvidasHospital TesteGestorgestor@teste.comSairGerenciar DúvidasVisualize e responda dúvidas dos médicosAtualizar1Total1Pendentes0RespondidasFiltrar por AulaTodas as aulasPendentes1Pendente18/03/2026, 18:03teste testeResponder DúvidaRespondidas0Nenhuma dúvida respondida "
+    }
+  },
+  "doctor:/dashboard": {
+    "pagePath": "/dashboard",
+    "consoleErrs": [
+      "Failed to load resource: the server responded with a status of 500 ()",
+      "Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "netFiltered": [
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/72de25b8-400d-4b31-9d3d-2e8b7a629e60/attempts",
+      "[500] https://web-production-e40b7.up.railway.app/api/test-attempts/lessons/63651119-e100-4b19-bf5e-5edbabb35028/attempts"
+    ],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "absolute top-0 right-0 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl",
+          "z": 0,
+          "position": "absolute",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 192,
+            "h": 192,
+            "t": 80,
+            "l": 166,
+            "r": 358,
+            "b": 272
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteDashboardHospital TesteMédicomedico@teste.comSairBem-vindo de voltamedicoHospital Teste · MédicoPerfilmedico@teste.comMédicoHospitalHospital TesteAtivoProgresso0%0/2 aulasAcesso RápidoTrilhas de AprendizadoExplore conteúdo disponívelMinhas DúvidasPerguntas e respostasSeus Plantões Esta SemanaNenhum plantão agendado para esta semana.Próximos PassosExplore as trilhas de aprendizado di"
+    }
+  },
+  "doctor:/shifts": {
+    "pagePath": "/shifts",
+    "consoleErrs": [],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteMeus PlantõesHospital TesteMédicomedico@teste.comSairMeus PlantõesSeus turnos escalados nesta semanaAtualizarSolicitar TrocaNenhum plantão escalado esta semanaAguarde a publicação da escala pelo gestor(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])self.__next_f.push([1,\"1:HL[\\\"/_next/static/media/e4af272ccee01ff0-s.p.woff2\\\",\\\"font\\\",{\\\"crossOrigin\\\":\\\"\\\",\\\""
+    }
+  },
+  "doctor:/cdss": {
+    "pagePath": "/cdss",
+    "consoleErrs": [],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteSuporte ClínicoHospital TesteMédicomedico@teste.comSairSuporte ClínicoConsultas baseadas nos protocolos do seu hospitalAviso: Este sistema fornece informações baseadas nos protocolos internos do hospital. Não substitui o julgamento clínico. Sempre verifique com a equipe médica em situações de emergência.Consulte os protocolos do hospitalQual é o protocolo para sepse neonatal?Dose de"
+    }
+  },
+  "doctor:/doubts": {
+    "pagePath": "/doubts",
+    "consoleErrs": [],
+    "netFiltered": [],
+    "data": {
+      "positioned": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 sm:w-14 h-12",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "rect": {
+            "w": 48,
+            "h": 48,
+            "t": 748,
+            "l": 311,
+            "r": 359,
+            "b": 796
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "fixed top-0 left-0 h-screen w-64 bg-[#0d1117] border-r border-white/[0.05]",
+          "z": 40,
+          "position": "fixed",
+          "pointerEvents": "auto",
+          "transform": "matrix(1, 0, 0, 1, -256, 0)",
+          "rect": {
+            "w": 256,
+            "h": 812,
+            "t": 0,
+            "l": -256,
+            "r": 0,
+            "b": 812
+          },
+          "coversMost": false,
+          "coversTop": false,
+          "onScreen": false
+        },
+        {
+          "tag": "HEADER",
+          "id": "",
+          "classes": "sticky top-0 z-20 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/[0.05] px-4",
+          "z": 20,
+          "position": "sticky",
+          "pointerEvents": "auto",
+          "transform": "",
+          "rect": {
+            "w": 375,
+            "h": 63,
+            "t": 0,
+            "l": 0,
+            "r": 375,
+            "b": 63
+          },
+          "coversMost": false,
+          "coversTop": true,
+          "onScreen": true
+        }
+      ],
+      "blockedElements": [],
+      "sidebar": {
+        "tag": "ASIDE",
+        "classes": "w-64 flex-shrink-0 bg-[#0d1117] border-r border-white/[0.05] min-h-screen flex flex-col",
+        "position": "static",
+        "zIndex": "auto",
+        "transform": "none",
+        "visibility": "visible",
+        "display": "flex",
+        "rect": {
+          "w": 0,
+          "h": 0,
+          "t": 0,
+          "l": 0
+        },
+        "isOffscreen": true
+      },
+      "alerts": [],
+      "loadingEls": 0,
+      "vw": 375,
+      "vh": 812,
+      "pageText": "SSL AcademyÁrea do MédicoDashboardTrilhasMeus PlantõesMinhas DúvidasSuporte ClínicoMEmedico@teste.comHospital TesteMinhas DúvidasHospital TesteMédicomedico@teste.comSairMinhas DúvidasGerencie suas dúvidas sobre as aulasNova Dúvida1Total1Pendentes0RespondidasStatusTodasPendentesRespondidasAulaTodas as aulastesteTeste CorreçãoPendente18/03/2026, 18:03teste teste(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])self.__next_f.push([1,\"1:HL[\\\"/_next/static/media/e4af272ccee01ff0"
+    }
+  }
+}
